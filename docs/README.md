@@ -9,12 +9,17 @@ of the Freeze Document, Documentation Philosophy):
 
 ## Current contents
 
+- [`PROJECT_FREEZE_DOCUMENT.md`](PROJECT_FREEZE_DOCUMENT.md) — the
+  frozen project constitution, reproduced here as a reference copy for
+  traceability.
+- [`PROJECT_DESIGN_DOCUMENT.md`](PROJECT_DESIGN_DOCUMENT.md) — the
+  engineering blueprint (PDD), reproduced here as a reference copy.
 - [`adr/`](adr/) — Architecture Decision Records (ADR-001 through
   ADR-007), locked during project planning.
+- [`testing/`](testing/) — per-milestone test reports.
 
 ## Planned (added incrementally, as the corresponding work exists)
 
-- Project Design Document (PDD) reference copy
 - Architecture overview and diagrams
 - Installation guide
 - User guide

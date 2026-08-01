@@ -78,7 +78,11 @@ the user interface — downstream modules are not executed.
 
 Full architectural reasoning is recorded in the project's
 [Architecture Decision Records](docs/adr/), which are locked and stable
-unless revised through an explicit, documented process.
+unless revised through an explicit, documented process. Reference
+copies of the frozen constitutional documents are also committed to
+the repository: the
+[Project Freeze Document](docs/PROJECT_FREEZE_DOCUMENT.md) and the
+[Project Design Document](docs/PROJECT_DESIGN_DOCUMENT.md).
 
 ## Current Implementation Status
 
@@ -259,6 +263,6 @@ if pursued at all:
 - Benchmarking of multiple competing forecasting algorithms, AutoML,
   or hyperparameter optimization across competing models
 
-See the [Project Design Document](docs/) and
+See the [Project Design Document](docs/PROJECT_DESIGN_DOCUMENT.md) and
 [Architecture Decision Records](docs/adr/) for the full rationale
 behind these exclusions.
