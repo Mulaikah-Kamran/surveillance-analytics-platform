@@ -3,14 +3,14 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "surveillance-platform"
+name = "surveillance-analytics-platform"
 version = "0.1.0"
 description = "Public Health Surveillance & Analytics Platform — a modular research software platform for reproducible infectious disease surveillance analytics."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
-    { name = "TODO: add author name" }
+    { name = "Mulaikah Kamran" }
 ]
 
 [tool.setuptools.packages.find]
