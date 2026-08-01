@@ -170,18 +170,34 @@ surveillance-analytics-platform/
 
 ## Quick Start
 
-Requirements: **Python 3.12**.
+Requires **Python 3.12 or newer**.
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd surveillance-analytics-platform
+```
 
-# Create and activate a virtual environment
-python3.12 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+Create and activate a virtual environment:
 
-# Install dependencies and the package itself (editable install)
+**Linux / macOS**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows**
+
+```powershell
+py -3 -m venv .venv
+.venv\Scripts\activate
+```
+
+Then, on any platform, install dependencies and the package itself
+(editable install):
+
+```bash
 pip install -r requirements.txt
 pip install -e .
 ```
@@ -205,11 +221,15 @@ instructions as the analytical workflow is implemented.
   black --check .     # or `black .` to apply formatting
   ```
 
-- **Tested environment:** developed and tested on the environment
-  available at authoring time; expected to be portable to Linux,
-  macOS, and Windows (no known OS-specific dependencies), though this
-  has not been formally verified across all three as part of Milestone
-  1.
+- **Tested environment:**
+
+  > Developed and tested on: Linux (Ubuntu), Python 3.12.3. Also
+  > verified via the project's GitHub Actions CI, which runs on
+  > `ubuntu-latest`.
+  >
+  > Expected compatibility: macOS and Windows (no known OS-specific
+  > dependencies in the code or tooling), but these have not yet been
+  > formally tested as part of Milestone 1.
 
 ## Testing Philosophy
 
