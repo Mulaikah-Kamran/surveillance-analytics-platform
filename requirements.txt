@@ -1,0 +1,17 @@
+# Public Health Surveillance & Analytics Platform — dependencies
+#
+# Per the Freeze Document (Section 26, Dependency Management,
+# Principle 4 — "Start minimal, grow with justification"): a dependency
+# is introduced only in the milestone where it first becomes necessary.
+# Milestone 1 (Project Foundation) requires no runtime analytical
+# dependencies yet — only the tools needed for repository setup and
+# testing. Runtime packages (pandas, numpy, plotly, scikit-learn,
+# streamlit) will be added in the milestones that first require them
+# (see Section 29, Implementation Roadmap), each with its own
+# justification recorded in the corresponding commit.
+#
+# Exact version pinning is used throughout, per Section 26, Principle 3.
+
+pytest==9.1.1
+black==26.5.1
+ruff==0.16.1
