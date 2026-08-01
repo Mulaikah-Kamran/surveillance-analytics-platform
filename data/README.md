@@ -12,3 +12,19 @@ Versioning):
 No data is present at Milestone 1. Dataset acquisition, documentation
 of the exact OpenDengue National Extract version used, and any small
 example data begin in Milestone 2 (Data Acquisition & Understanding).
+
+## Milestone 2: acquiring the OpenDengue National Extract
+
+Run `python data/download_national_extract.py` to download the exact
+OpenDengue National Extract (version 1.3, GitHub release tag `v1.3.0`)
+used throughout this project. The script fetches the official release
+archive, verifies it against a pinned SHA-256 checksum, and extracts
+the single CSV into `data/raw/` — a directory that is git-ignored by
+design (see `.gitignore` and Section 23 of the Freeze Document).
+
+The script performs acquisition only — no parsing beyond unzipping, no
+cleaning, no column renaming. See
+[`docs/datasets/01_acquisition.md`](../docs/datasets/01_acquisition.md)
+for the full source, citation, licensing, and version details, and the
+rest of `docs/datasets/` for schema, quality-profile, and dataset
+landscape documentation produced during Milestone 2.

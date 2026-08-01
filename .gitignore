@@ -37,7 +37,9 @@ results/
 # Raw research datasets — never committed (see README / docs on data
 # acquisition). Small example/synthetic data used for demonstration is
 # permitted and should be added explicitly with git add -f if ever
-# placed under data/.
+# placed under data/. The acquisition script itself is source code, not
+# data, so it is explicitly un-ignored below.
 data/*
 !data/.gitkeep
 !data/README.md
+!data/download_national_extract.py
