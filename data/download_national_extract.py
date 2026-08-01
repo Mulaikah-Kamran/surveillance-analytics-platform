@@ -71,9 +71,12 @@ def verify_checksum(data: bytes, expected_sha256: str) -> str:
 def extract_csv(archive_bytes: bytes, member: str, destination: Path) -> Path:
     """Extract exactly one named member from the zip archive, unmodified."""
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(archive_bytes)) as zf:
-        with zf.open(member) as src, open(destination, "wb") as dst:
-            dst.write(src.read())
+    with (
+        zipfile.ZipFile(io.BytesIO(archive_bytes)) as zf,
+        zf.open(member) as src,
+        open(destination, "wb") as dst,
+    ):
+        dst.write(src.read())
     return destination
 
 
