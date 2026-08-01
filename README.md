@@ -221,6 +221,12 @@ instructions as the analytical workflow is implemented.
   black --check .     # or `black .` to apply formatting
   ```
 
+- **Version synchronization:** the project version is currently
+  declared in two places — `pyproject.toml` (`project.version`) and
+  `src/surveillance_platform/__init__.py` (`__version__`). Before
+  creating a new release tag, update both together. This is a manual
+  convention for now; no dynamic version tooling has been introduced
+  (consistent with the "start minimal" dependency principle).
 - **Tested environment:**
 
   > Developed and tested on: Linux (Ubuntu), Python 3.12.3. Also
