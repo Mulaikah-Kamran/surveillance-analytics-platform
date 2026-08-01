@@ -1,9 +1,11 @@
 # Decision Log — Study Country Selection (Milestone 2)
 
 **Date:** 2026-08-01
-**Status:** Proposed — evidence-based, but treated as pending
-confirmation before it is exercised in Milestone 3+, since it fixes the
-concrete study dataset for the rest of Version 1.
+**Status:** Superseded as the authoritative record by
+[ADR-008](../adr/ADR-008-study-country-selection.md) — the Milestone 2
+roadmap entry explicitly calls for this decision to be recorded as an
+ADR. This document remains as the detailed supporting evidence (full
+per-country profiling) that ADR-008 references rather than repeats.
 **Scope:** Selects the 3–5 South Asian countries that form the "Study
 Dataset" referenced in ADR-002 and Freeze Document Section 12. Does not
 revisit the extract choice (National Extract; see `02_dataset_landscape.md`)
@@ -87,7 +89,8 @@ scoring method would carry over unchanged.
 ## Status
 
 This selection is evidence-based and internally consistent with the
-frozen Chapter 3.1 criteria, but is recorded as **proposed** rather than
-finalized, since it fixes the concrete study dataset for the rest of
-Version 1 and India's exclusion in particular is a judgment call worth a
-second look before Milestone 3 begins.
+frozen Chapter 3.1 criteria. It is formally locked as
+[ADR-008](../adr/ADR-008-study-country-selection.md); this document is
+retained as ADR-008's supporting evidence record. India's exclusion in
+particular is a judgment call worth a second look before Milestone 3
+begins, as ADR-008 itself notes.

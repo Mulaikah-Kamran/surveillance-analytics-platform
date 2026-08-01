@@ -9,8 +9,10 @@ should be able to see *why* a decision was made, not just what it was.
 ## Contents
 
 - [`2026-08-01_country_selection.md`](2026-08-01_country_selection.md) —
-  selection of the study countries (Milestone 2, Chapter 3.1 criteria),
-  including the explicit reasoning for excluding Pakistan and India.
+  full per-country profiling behind the study country selection, now
+  formally locked as [ADR-008](../adr/ADR-008-study-country-selection.md)
+  (the roadmap calls for this specific decision to be an ADR; most other
+  Milestone 2 decisions are recorded here instead, without their own ADR).
 
 ## Decision Logs vs. ADRs
 

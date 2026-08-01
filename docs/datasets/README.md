@@ -27,7 +27,7 @@ Section 29).
    investigation of candidate validation datasets (R-001), including
    confirmation that PLISA remains inaccessible.
 
-Country selection (Milestone 2, Chapter 3 criteria) is documented
-separately under [`../decision_logs/`](../decision_logs/), since it is a
-project decision with a recorded rationale rather than dataset reference
-material.
+Country selection (Milestone 2, Chapter 3 criteria) is formally locked
+as [ADR-008](../adr/ADR-008-study-country-selection.md), with the full
+per-country profiling behind it in
+[`../decision_logs/`](../decision_logs/).
