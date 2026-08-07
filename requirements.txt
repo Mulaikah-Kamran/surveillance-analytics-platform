@@ -15,3 +15,7 @@
 pytest==9.1.1
 black==26.5.1
 ruff==0.16.1
+
+# Milestone 4 (Data Preparation Pipeline) — first milestone requiring
+# tabular data structures, per Section 26 Principle 4 and Section 29.
+pandas==3.0.5
