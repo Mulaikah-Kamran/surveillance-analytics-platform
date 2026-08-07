@@ -20,6 +20,9 @@ of the Freeze Document, Documentation Philosophy):
 - [`role_configuration.md`](role_configuration.md) — the Role
   Configuration contract (Milestone 3): role model, public API, and
   validation scope.
+- [`data_preparation.md`](data_preparation.md) — the Data Preparation
+  Pipeline contract (Milestone 4): stage responsibilities, the M3/M4
+  validation boundary, and the evidence-based cleaning policy.
 
 ## Planned (added incrementally, as the corresponding work exists)
 
