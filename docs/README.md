@@ -15,8 +15,11 @@ of the Freeze Document, Documentation Philosophy):
 - [`PROJECT_DESIGN_DOCUMENT.md`](PROJECT_DESIGN_DOCUMENT.md) — the
   engineering blueprint (PDD), reproduced here as a reference copy.
 - [`adr/`](adr/) — Architecture Decision Records (ADR-001 through
-  ADR-007), locked during project planning.
+  ADR-008), locked during project planning.
 - [`testing/`](testing/) — per-milestone test reports.
+- [`role_configuration.md`](role_configuration.md) — the Role
+  Configuration contract (Milestone 3): role model, public API, and
+  validation scope.
 
 ## Planned (added incrementally, as the corresponding work exists)
 
