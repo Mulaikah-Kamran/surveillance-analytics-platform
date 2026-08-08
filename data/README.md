@@ -28,3 +28,16 @@ cleaning, no column renaming. See
 for the full source, citation, licensing, and version details, and the
 rest of `docs/datasets/` for schema, quality-profile, and dataset
 landscape documentation produced during Milestone 2.
+
+## Milestone 5: acquiring the WDI population reference
+
+Run `python data/download_population_reference.py` to download the
+World Bank World Development Indicators population reference (`SP.POP.TOTL`)
+for the four ADR-008 study countries, used only for Milestone 5's
+optional population-normalized reported-case rate. The script queries
+the WDI API, verifies the response against a pinned SHA-256 checksum,
+and writes a minimal `country, year, population` CSV into `data/raw/`
+— also git-ignored, following the same pattern as the OpenDengue
+extract. See [`docs/eda.md`](../docs/eda.md) for the full source,
+licensing, and methodology details, including why this is optional and
+never a required input to `analyze()`.
