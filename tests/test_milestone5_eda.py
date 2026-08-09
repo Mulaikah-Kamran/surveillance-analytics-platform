@@ -322,6 +322,18 @@ def test_country_comparison_categorical_distributions_per_country():
     assert bangladesh.resolution_distribution.counts["Month"] == 5
 
 
+def _invalid_population_dataset() -> pd.DataFrame:
+    """One valid figure plus one each of zero, negative, and missing/NaN
+    population, to exercise the invalid-population guard directly."""
+    return pd.DataFrame(
+        {
+            "country": ["Sri Lanka", "Sri Lanka", "Bangladesh", "Bangladesh"],
+            "year": [2020, 2021, 2021, 2022],
+            "population": [21_800_000, 0, -169_000_000, float("nan")],
+        }
+    )
+
+
 # ---------------------------------------------------------------------
 # Population normalization
 # ---------------------------------------------------------------------
@@ -366,6 +378,51 @@ def test_population_normalization_does_not_mutate_population_data():
     original = population_data.copy()
     population_normalized_summary(time_series, population_data)
     pd.testing.assert_frame_equal(population_data, original)
+
+
+def test_population_normalization_valid_positive_population_produces_rate():
+    data = _synthetic_dataset()
+    time_series = time_series_summary(data, ROLE_CONFIG)
+    result = population_normalized_summary(time_series, _invalid_population_dataset())
+    covered = {(r.country, r.year): r for r in result.rates}
+    assert ("Sri Lanka", 2020) in covered
+    assert covered[("Sri Lanka", 2020)].reported_cases_per_100000 == pytest.approx(
+        15 / 21_800_000 * 100_000
+    )
+
+
+def test_population_normalization_zero_population_is_skipped():
+    data = _synthetic_dataset()
+    time_series = time_series_summary(data, ROLE_CONFIG)
+    result = population_normalized_summary(time_series, _invalid_population_dataset())
+    covered = {(r.country, r.year) for r in result.rates}
+    assert ("Sri Lanka", 2021) not in covered
+
+
+def test_population_normalization_negative_population_is_skipped():
+    data = _synthetic_dataset()
+    time_series = time_series_summary(data, ROLE_CONFIG)
+    result = population_normalized_summary(time_series, _invalid_population_dataset())
+    covered = {(r.country, r.year) for r in result.rates}
+    assert ("Bangladesh", 2021) not in covered
+
+
+def test_population_normalization_missing_or_nan_population_is_skipped():
+    data = _synthetic_dataset()
+    time_series = time_series_summary(data, ROLE_CONFIG)
+    result = population_normalized_summary(time_series, _invalid_population_dataset())
+    covered = {(r.country, r.year) for r in result.rates}
+    assert ("Bangladesh", 2022) not in covered
+
+
+def test_population_normalization_invalid_values_do_not_crash_pipeline():
+    """The guard's whole point: an invalid external population value
+    must not raise, only skip that one observation."""
+    data = _synthetic_dataset()
+    time_series = time_series_summary(data, ROLE_CONFIG)
+    result = population_normalized_summary(time_series, _invalid_population_dataset())
+    assert result is not None
+    assert len(result.rates) == 1  # only the one valid figure produced a rate
 
 
 # ---------------------------------------------------------------------

@@ -29,8 +29,9 @@ Output:
 
 Output schema (see surveillance_platform.eda.population for how this
 is consumed): columns ``country`` (matching the surveillance dataset's
-Location-role values, e.g. "Sri Lanka" — not an ISO3 code), ``year``,
-``population``.
+Location-role values *exactly as OpenDengue represents them* — e.g.
+``"SRI LANKA"``, uppercase, not an ISO3 code and not title-cased),
+``year``, ``population``.
 """
 
 from __future__ import annotations
@@ -48,15 +49,21 @@ INDICATOR = "SP.POP.TOTL"
 # ISO3 codes -> the country-name spelling used by adm_0_name in the
 # OpenDengue National Extract (i.e. the values that will actually
 # appear in the surveillance dataset's configured Location-role
-# column). This mapping is the one, deliberately localized, place
-# where a WDI-specific detail (ISO3 codes) is translated into the
-# platform's role-model-facing vocabulary — surveillance_platform.eda
-# itself never needs to know about ISO3 codes.
+# column). OpenDengue represents adm_0_name in uppercase (confirmed by
+# direct inspection of the real National Extract, e.g. "SRI LANKA",
+# not "Sri Lanka") — this mapping is written to match that exact
+# representation, deliberately and explicitly, rather than introducing
+# case-insensitive or otherwise general-purpose normalization into the
+# join logic in surveillance_platform.eda.population. This is the one,
+# deliberately localized, place where a WDI-specific detail (ISO3
+# codes) is translated into the platform's role-model-facing
+# vocabulary — surveillance_platform.eda itself never needs to know
+# about ISO3 codes, or about OpenDengue's casing convention.
 STUDY_COUNTRIES = {
-    "LKA": "Sri Lanka",
-    "BGD": "Bangladesh",
-    "MDV": "Maldives",
-    "NPL": "Nepal",
+    "LKA": "SRI LANKA",
+    "BGD": "BANGLADESH",
+    "MDV": "MALDIVES",
+    "NPL": "NEPAL",
 }
 
 ARCHIVE_URL = (
@@ -65,10 +72,19 @@ ARCHIVE_URL = (
     "?format=json&per_page=20000"
 )
 
-# No immutable tagged release exists for this API (see module
-# docstring) — this is recorded on first run, the same graceful
-# first-run behavior data/download_national_extract.py already uses.
-EXPECTED_RESPONSE_SHA256 = "PLACEHOLDER_RUN_ONCE_TO_GENERATE"
+# Pinned SHA-256 digest, provided by the Antigravity review's own
+# verified download of this exact query — NOT independently
+# re-downloaded or re-verified by Claude, because api.worldbank.org is
+# outside this sandbox's network allowlist (confirmed: HTTP 403 from
+# the egress proxy on every attempt). If a future run reports a
+# checksum mismatch, that could mean either (a) the upstream WDI
+# response has genuinely changed since this was pinned, or (b) this
+# pinned value was never independently verified against a live
+# download in this environment — investigate before replacing it,
+# do not silently substitute a newly generated digest.
+EXPECTED_RESPONSE_SHA256 = (
+    "7681e342a74f5b1fd05980c26ae612ca0899247a7285d79d2edb9e8a060c473d"
+)
 
 RAW_DIR = Path(__file__).parent / "raw"
 OUTPUT_PATH = RAW_DIR / "population_reference.csv"

@@ -153,11 +153,14 @@ follows the same acquisition/reproducibility pattern as
 the response against a pinned SHA-256 checksum, and writes a minimal
 `country, year, population` CSV to `data/raw/population_reference.csv`
 (git-ignored, never committed, reproducible by any reviewer). `country`
-values are the ADR-008 country names (e.g. `"Sri Lanka"`), matching
-whatever the dataset's configured Location-role column contains — the
-ISO3-to-name mapping is handled once, inside the acquisition script,
-so `surveillance_platform.eda.population` itself never needs to know
-about ISO3 codes.
+values match the OpenDengue National Extract's `adm_0_name`
+representation exactly — uppercase (e.g. `"SRI LANKA"`, not
+`"Sri Lanka"`), confirmed by direct inspection of the real dataset —
+not an ADR-008-style title-cased name and not an ISO3 code. The
+ISO3-to-name (and casing) mapping is handled once, inside the
+acquisition script, so `surveillance_platform.eda.population` itself
+never needs to know about ISO3 codes or OpenDengue's casing
+convention.
 
 **Methodology:** the rate is computed from the already
 homogeneity-checked *annual* aggregate (`TimeSeriesSummary.country_years`),
