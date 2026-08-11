@@ -19,3 +19,8 @@ ruff==0.16.1
 # Milestone 4 (Data Preparation Pipeline) — first milestone requiring
 # tabular data structures, per Section 26 Principle 4 and Section 29.
 pandas==3.0.5
+
+# Milestone 6 (Visualization) — first milestone requiring interactive
+# analytical visualization, per Section 26 (Dependency Table, Section
+# 29 Implementation Roadmap: Plotly is the locked visualization library).
+plotly==6.9.0

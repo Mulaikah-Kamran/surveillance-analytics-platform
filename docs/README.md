@@ -23,6 +23,14 @@ of the Freeze Document, Documentation Philosophy):
 - [`data_preparation.md`](data_preparation.md) — the Data Preparation
   Pipeline contract (Milestone 4): stage responsibilities, the M3/M4
   validation boundary, and the evidence-based cleaning policy.
+- [`eda.md`](eda.md) — the Exploratory Data Analysis contract
+  (Milestone 5): analytical scope, the M4/M5 boundary, the
+  country-year homogeneity checks, and optional population
+  normalization.
+- [`visualization.md`](visualization.md) — the Visualization contract
+  (Milestone 6): the five finalized visualizations, the M5/M6
+  boundary, how each visualization maps to `EDAResult`, and the
+  optional/graceful-omission paths.
 
 ## Planned (added incrementally, as the corresponding work exists)
 

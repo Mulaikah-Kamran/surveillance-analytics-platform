@@ -41,6 +41,45 @@ line with the tagged-release strategy locked in the Freeze Document
 No preprocessing, cleaning, role-assignment, or analytical logic was
 implemented in this milestone, per its exploratory scope.
 
+### Added — Milestone 6: Visualization
+
+- `src/surveillance_platform/visualization/`: the five finalized M6
+  visualizations, consuming only `EDAResult` (never `prepared_data`),
+  per the frozen M5 -> M6 boundary — annual surveillance trend
+  (country small multiples, with M5's generic country-year
+  heterogeneity flags surfaced on affected observations), annual
+  distribution of reported-case totals by country, an optional
+  population-normalized reported-case-rate distribution (omitted
+  gracefully when `EDAResult.population_normalized` is absent), a
+  surveillance resolution / case-definition profile (`T_res` and
+  `case_definition_standardised`, each independently optional), and a
+  Surveillance Measure distribution rendered directly from M5's
+  already-computed summary statistics.
+- `visualize()` / `VisualizationResult`: a single orchestrator
+  function bundling all five visualizations, mirroring the
+  `prepare()` / `analyze()` pattern already established in M4 and M5.
+- `requirements.txt`: adds `plotly==6.9.0` — the visualization
+  dependency locked in the Freeze Document's Dependency Table
+  (Section 26) and Implementation Roadmap (Section 29), introduced
+  now that Milestone 6 first requires it.
+- `docs/visualization.md`: the Visualization contract — the M5/M6
+  boundary, how each visualization maps to `EDAResult`, and the
+  optional/graceful-omission paths.
+- `tests/test_milestone6_visualization.py`: milestone tests covering
+  generation of each of the five visualizations, correct
+  representation of M5's analytical results, preservation of
+  country/year structure, generic (not hard-coded) propagation of
+  heterogeneity flags to the annual trend, graceful omission of the
+  population-normalized visualization when unavailable, non-mutation
+  of `EDAResult`, and graceful failure (a clear typed error, not a
+  fabricated chart) on genuinely empty analytical input.
+
+No data cleaning, imputation, recomputation of M5 statistics beyond
+what rendering inherently requires, hypothesis testing, regression,
+forecasting, or Streamlit/dashboard functionality was implemented in
+this milestone, per its representation-only scope. M1–M5 files and
+behavior are untouched.
+
 ## [0.1.0] — Milestone 1: Project Foundation
 
 ### Added
