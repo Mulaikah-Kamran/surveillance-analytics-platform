@@ -15,6 +15,8 @@ than hand-built ``EDAResult`` instances wherever practical.
 from __future__ import annotations
 
 import copy
+import dataclasses
+import math
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -381,10 +383,45 @@ def test_surveillance_resolution_profile_renders_partial_metadata(eda_result):
 # ---------------------------------------------------------------------
 
 
+def _nan_safe_equal(left: object, right: object) -> bool:
+    """Structural equality that treats ``NaN == NaN`` as equal.
+
+    Plain Python/dataclass ``==`` follows IEEE 754 (``NaN != NaN``), so
+    a straight ``eda_result == before`` comparison can spuriously fail
+    an immutability check even when nothing was mutated, whenever a
+    field is genuinely ``NaN`` in both objects (e.g. a per-country
+    standard deviation computed from a single observation, as in the
+    Maldives 2020 fixture row). This recurses through dataclasses,
+    dicts, lists, and tuples, and only special-cases ``float`` NaN —
+    every other field still uses ordinary ``==``, so a real mutation
+    is still caught.
+    """
+    if dataclasses.is_dataclass(left) and dataclasses.is_dataclass(right):
+        if type(left) is not type(right):
+            return False
+        return all(
+            _nan_safe_equal(getattr(left, field.name), getattr(right, field.name))
+            for field in dataclasses.fields(left)
+        )
+    if isinstance(left, dict) and isinstance(right, dict):
+        return left.keys() == right.keys() and all(
+            _nan_safe_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, (list, tuple)) and isinstance(right, (list, tuple)):
+        return len(left) == len(right) and all(
+            _nan_safe_equal(a, b) for a, b in zip(left, right)
+        )
+    if isinstance(left, float) and isinstance(right, float):
+        if math.isnan(left) and math.isnan(right):
+            return True
+        return left == right
+    return left == right
+
+
 def test_visualize_does_not_mutate_eda_result(eda_result_with_population):
     before = copy.deepcopy(eda_result_with_population)
     visualize(eda_result_with_population)
-    assert eda_result_with_population == before
+    assert _nan_safe_equal(eda_result_with_population, before)
 
 
 def test_individual_functions_do_not_mutate_eda_result(eda_result_with_population):
@@ -394,7 +431,7 @@ def test_individual_functions_do_not_mutate_eda_result(eda_result_with_populatio
     surveillance_measure_distribution(eda_result_with_population)
     population_normalized_distribution(eda_result_with_population)
     surveillance_resolution_profile(eda_result_with_population)
-    assert eda_result_with_population == before
+    assert _nan_safe_equal(eda_result_with_population, before)
 
 
 # ---------------------------------------------------------------------

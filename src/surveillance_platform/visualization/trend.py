@@ -125,7 +125,14 @@ def annual_surveillance_trend(eda_result: EDAResult) -> go.Figure:
             col=col,
         )
         figure.update_yaxes(title_text="Reported-case total", row=row, col=col)
-        figure.update_xaxes(title_text="Year", row=row, col=col, dtick=1)
+        figure.update_xaxes(
+            title_text="Year",
+            row=row,
+            col=col,
+            tickformat="d",
+            nticks=8,
+            tickangle=-45,
+        )
 
     figure.update_layout(
         title=(

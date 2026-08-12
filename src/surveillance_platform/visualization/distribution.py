@@ -97,8 +97,7 @@ def surveillance_measure_distribution(eda_result: EDAResult) -> go.Figure:
             lowerfence=[descriptive.minimum],
             upperfence=[descriptive.maximum],
             mean=[descriptive.mean],
-            sd=[descriptive.std],
-            boxmean="sd",
+            boxmean=True,
             name="Surveillance Measure",
         )
     )
@@ -107,7 +106,8 @@ def surveillance_measure_distribution(eda_result: EDAResult) -> go.Figure:
         figure,
         title=(
             "Surveillance Measure Distribution "
-            f"(n={descriptive.count}, "
+            f"(n={descriptive.count}, mean={descriptive.mean:.1f}, "
+            f"std={descriptive.std:.1f}, "
             f"zero-value share={distribution.zero_value_share:.1%})"
         ),
     )
