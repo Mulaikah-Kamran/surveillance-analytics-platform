@@ -25,6 +25,7 @@ every dependent document, never silently.
 | [ADR-006](ADR-006-user-interface-strategy.md) | User Interface Strategy |
 | [ADR-007](ADR-007-temporal-standardization-strategy.md) | Temporal Standardization Strategy |
 | [ADR-008](ADR-008-study-country-selection.md) | Study Country Selection |
+| [ADR-009](ADR-009-forecasting-strategy.md) | Forecasting Input, Model, and Evaluation Strategy |
 
 ADR-001 through ADR-007 were locked during project planning (Phase 0)
 and are reproduced here from the Freeze Document, Section 18, as the
@@ -33,4 +34,6 @@ is the first ADR created during implementation rather than planning —
 Milestone 2's roadmap entry explicitly calls for the study country
 selection to be recorded as an ADR, since it fixes a concrete input to
 every later milestone and would be difficult to reverse once Milestone 3
-begins building against it.
+begins building against it. ADR-009 similarly resolves, using the
+actual acquired data, the specific model/input/evaluation decisions
+that ADR-005 deliberately left open during planning.
