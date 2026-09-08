@@ -24,3 +24,10 @@ pandas==3.0.5
 # analytical visualization, per Section 26 (Dependency Table, Section
 # 29 Implementation Roadmap: Plotly is the locked visualization library).
 plotly==6.9.0
+
+# Milestone 7 (Forecasting) — SARIMA is the locked primary forecasting
+# workflow (ADR-009). Not in the original Section 26 dependency table
+# (which named scikit-learn only for the baseline); statsmodels is
+# introduced here per Principle 4, with SARIMA's specific justification
+# recorded in ADR-009. Verified compatible with pandas==3.0.5/Python 3.12.
+statsmodels==0.15.0
