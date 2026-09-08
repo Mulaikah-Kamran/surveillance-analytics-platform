@@ -197,3 +197,48 @@ purely on month-to-month continuity of the role-contracted columns,
 which is genuinely generic. This preserves the original intent
 (no modification needed for Milestone 9) without overstating what the
 OpenDengue-specific checks themselves guarantee.
+
+## Addendum (2026-09-08, later same day) — Antigravity review findings and fixes
+
+A deep scientific/architectural review (Antigravity, read-only audit
+of `feature/forecasting`) independently re-ran the full pipeline
+against the real OpenDengue/WDI data and confirmed the four locked
+tracks above, the reported MASE values, and the honest Bangladesh
+result unchanged. Three findings were accepted and fixed:
+
+- **Phantom track generation on long gaps (required correction).**
+  `detect_tracks`'s loop could start a new candidate run on a month
+  with no data at all, immediately after closing a run for exceeding
+  the tolerated-gap limit — producing spurious 1-2 month tracks
+  consisting entirely of missing months. Reproduced on countries
+  outside the four ADR-008 study countries (their gaps are shorter
+  than the failure mode requires, or — Maldives' 2021 gap — span a
+  full calendar year and are already excluded earlier via the
+  resolution check). Confirmed via manual trace and a regression test
+  (`test_long_gap_does_not_produce_phantom_tracks`) that this does
+  **not** change any of the four tracks in the table above. Fixed by
+  requiring a candidate run's start month to actually have data.
+- **Docstring said "per-year" case definition (required correction).**
+  `detect_tracks`'s docstring was not updated when the underlying
+  logic was corrected to month-level precision during implementation
+  (see the first addendum above); `_month_case_definition_signals`'s
+  own docstring was already correct. Fixed to say "per-month".
+- **Non-convergence path untested (required correction).** The
+  `mle_retvals["converged"]` check in both `select_sarima_order` and
+  `fit_and_forecast_sarima` was implemented and exercised incidentally
+  by real short-series fits, but never asserted on directly. Added
+  two mocked tests confirming a non-converged fit is rejected even
+  when its AIC would otherwise win, and that the final production fit
+  raises rather than returning an unreliable forecast.
+
+Also applied one recommendation: `SarimaOrder.aic` is now explicitly
+cast to Python `float` (statsmodels returns `np.float64`), to avoid a
+possible downstream serialization surprise in Milestone 8. The
+warning-suppression recommendation was not applied — the warnings are
+statsmodels' own non-convergence signal, already handled
+programmatically, and left visible rather than silenced.
+
+All four locked tracks, their exact month counts, and their reported
+MASE values are unchanged after these fixes (re-verified against the
+real data). Full suite after fixes: 154 passed, 0 failed (151 + 3 new
+tests: 1 phantom-track regression, 2 non-convergence-rejection).
