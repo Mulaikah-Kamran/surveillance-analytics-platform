@@ -80,6 +80,61 @@ forecasting, or Streamlit/dashboard functionality was implemented in
 this milestone, per its representation-only scope. M1–M5 files and
 behavior are untouched.
 
+### Added — Milestone 7: Forecasting
+
+- `src/surveillance_platform/forecasting/`: the full ADR-009 pipeline,
+  consuming `PreparationResult.data` directly (not `EDAResult`, which
+  only stores boolean homogeneity flags — see ADR-009). Window/track
+  detection (`detect_tracks`) groups each country's calendar-month
+  history into contiguous candidate tracks, evaluated against a
+  72-month eligibility floor with tolerance for isolated gaps up to 2
+  months; monthly aggregation and population-rate normalization
+  (`monthly_series`, `population_rate`); a SARIMA primary workflow
+  with order chosen once per track via an AIC grid
+  (`select_sarima_order`, `fit_and_forecast_sarima`), fit on
+  `log1p(rate)` and back-transformed with intervals floored at 0; a
+  seasonal-naive baseline (`seasonal_naive_forecast`) per ADR-005; a
+  rolling-origin backtest and MAE/RMSE/MASE evaluation
+  (`rolling_origin_backtest`, `compute_metrics`,
+  `compute_baseline_metrics`); and `forecast()` /
+  `ForecastResult`, mirroring the `prepare()` / `analyze()` pattern
+  already established in M4 and M5. Replaces the M1 placeholder
+  `forecasting/__init__.py`.
+- `docs/adr/ADR-009-forecasting-strategy.md`: locks the specific
+  design ADR-005 deliberately left open (target variable, track
+  eligibility, model and baseline choice, evaluation protocol), with a
+  2026-09-08 addendum correcting an initial dataset-agnosticism claim
+  about the OpenDengue-specific `T_res`/`case_definition_standardised`
+  columns.
+- `docs/forecasting.md`: the Forecasting contract, the M4/M7 boundary,
+  the real Version 1 track list and backtest results (Sri Lanka
+  MASE≈0.51, Maldives MASE≈0.70, Bangladesh Confirmed MASE≈1.43,
+  reported as-is per ADR-005), and every documented limitation.
+- `requirements.txt`: adds `statsmodels==0.15.0` — introduced now that
+  Milestone 7 first requires SARIMA, per Dependency Management
+  Principle 4. Verified compatible with the pinned
+  `pandas==3.0.5`/Python 3.12 environment via a fresh, isolated
+  install reproducing the full passing test suite.
+- `tests/test_milestone7_eligibility.py`,
+  `tests/test_milestone7_aggregation.py`, `tests/test_milestone7_model.py`,
+  `tests/test_milestone7_backtest.py`, `tests/test_milestone7_pipeline.py`:
+  44 new tests (unit tests per stage, synthetic fixtures mirroring the
+  M4/M5 style, plus end-to-end integration tests), covering the
+  eligibility floor and gap tolerance, case-definition-track
+  splitting at month-level precision, non-convergence handling,
+  interval flooring, MASE fairness, and graceful, documented handling
+  of below-threshold tracks and missing population data rather than
+  raising. Full suite: 151 passed, 0 failed, including a fresh-clone
+  reproducibility run from `requirements.txt` alone.
+
+Every design decision was checked directly against the real acquired
+data (OpenDengue National Extract, WDI population reference) before
+being locked, not adopted by convention — see ADR-009 for the full
+evidence trail, including two implementation-time corrections (window
+detection needed month-level, not year-level, case-definition
+precision; a non-converged SARIMA fit warns rather than raises and
+must be explicitly excluded from the AIC comparison).
+
 ## [0.1.0] — Milestone 1: Project Foundation
 
 ### Added
