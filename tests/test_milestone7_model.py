@@ -84,3 +84,41 @@ def test_seasonal_naive_forecast_returns_nan_when_no_lag_12_value():
     series = pd.Series(np.arange(6, dtype=float), index=index)
     forecast = seasonal_naive_forecast(series, horizon=3)
     assert np.isnan(forecast).all()
+
+
+def test_select_sarima_order_rejects_non_converged_fits():
+    """statsmodels only warns on non-convergence, it does not raise --
+    select_sarima_order must explicitly check mle_retvals['converged']
+    and exclude such a fit, even if its AIC looks attractive.
+    """
+    from unittest.mock import MagicMock, patch
+
+    series = _synthetic_seasonal_series()
+    mock_fitted = MagicMock()
+    mock_fitted.aic = -9999.0  # would win on AIC alone if not rejected
+    mock_fitted.mle_retvals = {"converged": False}
+    mock_model = MagicMock()
+    mock_model.fit.return_value = mock_fitted
+
+    with patch("surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model):
+        with pytest.raises(ValueError, match="No SARIMA order"):
+            select_sarima_order(series)
+
+
+def test_fit_and_forecast_sarima_raises_on_non_converged_final_fit():
+    """The final production fit (not just the grid search) must also
+    reject a non-converged result rather than return an unreliable
+    forecast.
+    """
+    from unittest.mock import MagicMock, patch
+
+    series = _synthetic_seasonal_series()
+    order = SarimaOrder(order=(1, 1, 1), seasonal_order=(1, 1, 1, 12), aic=0.0)
+    mock_fitted = MagicMock()
+    mock_fitted.mle_retvals = {"converged": False}
+    mock_model = MagicMock()
+    mock_model.fit.return_value = mock_fitted
+
+    with patch("surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model):
+        with pytest.raises(ValueError, match="did not converge"):
+            fit_and_forecast_sarima(series, order, horizon=3)

@@ -74,7 +74,7 @@ def select_sarima_order(rate_series: pd.Series) -> SarimaOrder:
                     if not fitted.mle_retvals.get("converged", True):
                         continue
                     if best is None or fitted.aic < best.aic:
-                        best = SarimaOrder(order, seasonal_order, fitted.aic)
+                        best = SarimaOrder(order, seasonal_order, float(fitted.aic))
     if best is None:
         raise ValueError("No SARIMA order in the grid converged for this series.")
     return best

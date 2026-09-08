@@ -133,6 +133,35 @@ def test_annual_resolution_years_are_excluded_from_the_run():
     assert tracks[0].n_months == 84
 
 
+def test_long_gap_does_not_produce_phantom_tracks():
+    """Regression test for a bug caught during Antigravity review: once
+    a run closed on an over-tolerance gap, the very next iteration
+    could start a *new* run on a still-missing month (no check that
+    the month actually had data), and if that phantom run's own gap
+    streak then exceeded tolerance too, it produced a spurious 1-2
+    month "track" consisting entirely of missing months -- zero real
+    observations. An 8-month gap (long enough for two tolerance
+    breaches in a row) is needed to reproduce this; the project's own
+    3-month-gap test above happens not to trigger it, because data
+    resumes exactly on the boundary where the first closure occurs.
+    Does not affect any of the four locked ADR-009 tracks (their one
+    real gap, Maldives 2021, spans a full calendar year and is
+    already excluded earlier via resolution_ok()), but is a genuine
+    correctness gap for Milestone 9's dataset-agnostic detection.
+    """
+    data = _monthly_rows("Testland", "2010-01", 100, skip_months=set(range(40, 48)))
+    tracks = detect_tracks(data, ROLE_CONFIG)
+    assert len(tracks) == 2
+    for t in tracks:
+        # No track should consist entirely (or almost entirely) of
+        # missing months -- that would be a phantom.
+        assert t.gap_months < t.n_months
+    assert tracks[0].n_months == 40
+    assert tracks[0].gap_months == 0
+    assert tracks[1].start == pd.Period("2010-01") + 48
+    assert tracks[1].gap_months == 0
+
+
 def test_missing_resolution_and_case_definition_columns_fall_back_generic():
     """ADR-009's 2026-09-08 addendum: absent T_res/case_definition_standardised
     columns must not crash detection -- it should fall back to

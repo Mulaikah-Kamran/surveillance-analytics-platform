@@ -86,7 +86,7 @@ def detect_tracks(data: pd.DataFrame, role_config: RoleConfiguration) -> list[Tr
 
     For each country, walks its full calendar-month span and starts a
     new run whenever: the dominant per-year resolution (if ``T_res``
-    is present) is not sub-annual; the dominant per-year case
+    is present) is not sub-annual; the dominant per-month case
     definition (if present) changes; or a gap in reported months
     exceeds :data:`MAX_TOLERATED_GAP_MONTHS`. Ineligible runs are
     still returned (ADR-009 Point 7). Never mutates ``data``.
@@ -151,9 +151,22 @@ def detect_tracks(data: pd.DataFrame, role_config: RoleConfiguration) -> list[Tr
 
             cd = case_def_at(period)
             if run_start is None:
+                if period not in present_set:
+                    # Do not start a new run on a month with no data at
+                    # all -- otherwise a long, tolerance-exceeding gap
+                    # produces spurious 1-2 month "phantom" tracks
+                    # containing zero real observations (found during
+                    # Antigravity review, reproduced on real data for
+                    # countries outside the four ADR-008 study
+                    # countries; does not affect any locked M7 result,
+                    # since a full-year gap is independently excluded
+                    # earlier by resolution_ok(), but is a genuine
+                    # correctness gap for Milestone 9's dataset-agnostic
+                    # detection).
+                    continue
                 run_start, run_case_def = period, cd
                 last_seen = period
-                gap_streak = 0 if period in present_set else 1
+                gap_streak = 0
                 continue
             if cd != run_case_def:
                 close_run(run_start, run_case_def, last_seen)
