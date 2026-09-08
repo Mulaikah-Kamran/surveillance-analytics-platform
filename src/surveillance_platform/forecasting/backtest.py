@@ -123,3 +123,20 @@ def compute_metrics(records: list[BacktestRecord]) -> Metrics:
         mase = None
 
     return Metrics(mae=mae, rmse=rmse, mase=mase)
+
+
+def compute_baseline_metrics(records: list[BacktestRecord]) -> Metrics | None:
+    """MAE and RMSE for the seasonal-naive baseline itself.
+
+    ADR-009 calls for reporting all three metrics "for each" (model
+    and baseline) so a reviewer can compare them directly, not just
+    via the MASE ratio. ``mase`` is always ``None`` here -- a
+    baseline's error scaled against itself is trivially 1 and
+    conveys nothing. Returns ``None`` (not a fabricated value) if no
+    origin has a valid baseline comparison.
+    """
+    comparable = [r for r in records if not np.isnan(r.baseline_forecast)]
+    if not comparable:
+        return None
+    errors = np.array([abs(r.baseline_forecast - r.actual) for r in comparable])
+    return Metrics(mae=float(errors.mean()), rmse=float(np.sqrt(np.mean(errors**2))), mase=None)

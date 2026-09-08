@@ -8,21 +8,18 @@ Builds on Milestone 4's ``prepared_data`` directly (not Milestone 5's
 ``EDAResult``, which only stores boolean homogeneity flags -- see
 ADR-009) and the same ``RoleConfiguration``.
 
-Public API is added incrementally as each part of ADR-009 is
-implemented. Currently available:
+Public API:
 
-* :func:`detect_tracks` -- window/track detection.
-* :func:`monthly_series` -- monthly aggregation from prepared data.
-* :func:`population_rate` -- population-normalized rate per 100,000.
-* :class:`Track` -- a candidate forecasting track.
-* :func:`select_sarima_order`, :func:`fit_and_forecast_sarima` --
-  SARIMA primary model (order chosen once per track).
-* :func:`seasonal_naive_forecast` -- the transparent baseline.
-* :func:`rolling_origin_backtest`, :func:`compute_metrics` --
-  expanding-window backtest and MAE/RMSE/MASE evaluation.
+* :func:`forecast` -- run the full M7 pipeline: detect every
+  candidate track and forecast each one.
+* :func:`forecast_track` -- run the pipeline for a single, already-
+  detected track.
+* :class:`ForecastResult` -- the pipeline's per-track output.
+* :class:`Track` -- a candidate forecasting track (see
+  :func:`detect_tracks`).
 
-The full ``ForecastResult`` orchestration tying these together is not
-yet implemented.
+Each stage is also independently importable for testing, e.g.
+``surveillance_platform.forecasting.eligibility.detect_tracks``.
 
 See ``docs/adr/ADR-009-forecasting-strategy.md`` for the full design.
 """
@@ -31,6 +28,7 @@ from surveillance_platform.forecasting.aggregation import monthly_series, popula
 from surveillance_platform.forecasting.backtest import (
     BacktestRecord,
     Metrics,
+    compute_baseline_metrics,
     compute_metrics,
     rolling_origin_backtest,
 )
@@ -41,16 +39,22 @@ from surveillance_platform.forecasting.model import (
     seasonal_naive_forecast,
     select_sarima_order,
 )
-from surveillance_platform.forecasting.report import Track
+from surveillance_platform.forecasting.pipeline import forecast, forecast_track
+from surveillance_platform.forecasting.report import ForecastResult, ResidualDiagnostics, Track
 
 __all__ = [
     "BacktestRecord",
+    "ForecastResult",
     "Metrics",
+    "ResidualDiagnostics",
     "SarimaOrder",
     "Track",
+    "compute_baseline_metrics",
     "compute_metrics",
     "detect_tracks",
     "fit_and_forecast_sarima",
+    "forecast",
+    "forecast_track",
     "monthly_series",
     "population_rate",
     "rolling_origin_backtest",
