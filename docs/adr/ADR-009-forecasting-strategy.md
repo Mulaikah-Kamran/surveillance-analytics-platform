@@ -177,3 +177,23 @@ before being locked, not adopted by convention:
   Management Principle 4).
 - Per ADR Discipline (Freeze Document Section 32), any change to this
   strategy is made as an explicit new ADR revision, not a silent edit.
+
+## Addendum (2026-09-08) — correction to the dataset-agnostic claim
+
+The window/track-detection function's dataset-agnostic design claim
+above is corrected: `T_res` and `case_definition_standardised` are
+OpenDengue-specific passthrough columns (per
+`temporal_standardization.py`'s own docstring), not part of ADR-004's
+frozen minimal role model (Time, Location, Surveillance Measure,
+optional Identifier). A future Milestone 9 dataset is not guaranteed
+to provide equivalent columns.
+
+The function is implemented so that resolution- and
+case-definition-aware track splitting is an **opportunistic
+enhancement, not a hard dependency**: it checks for the presence of
+`T_res`/`case_definition_standardised` and uses them when available
+(as with OpenDengue); when absent, it falls back to eligibility based
+purely on month-to-month continuity of the role-contracted columns,
+which is genuinely generic. This preserves the original intent
+(no modification needed for Milestone 9) without overstating what the
+OpenDengue-specific checks themselves guarantee.
