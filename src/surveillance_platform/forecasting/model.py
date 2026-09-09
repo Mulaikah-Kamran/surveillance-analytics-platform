@@ -13,6 +13,7 @@ with ADR-009's "per eligible track" wording.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -39,7 +40,11 @@ class SarimaOrder:
     aic: float
 
 
-def select_sarima_order(rate_series: pd.Series) -> SarimaOrder:
+def select_sarima_order(
+    rate_series: pd.Series,
+    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
+    | None = None,
+) -> SarimaOrder:
     """AIC grid search within the SARIMA family, on ``log1p(rate_series)``.
 
     Fit on the log-transform, not the raw rate: real project data is
@@ -48,6 +53,15 @@ def select_sarima_order(rate_series: pd.Series) -> SarimaOrder:
     SARIMA fit on this project's own data produced a nonsensical
     negative case-rate interval (ADR-009). Candidate orders that fail
     to converge are skipped, not treated as an error.
+
+    ``on_candidate``, if given, is called after every candidate fit
+    attempt (whether it converged, failed to converge, or raised) as
+    ``on_candidate(order, seasonal_order, aic, converged)`` --
+    ``aic`` is ``None`` if fitting raised an exception. Purely
+    additive: default ``None`` means zero behavior change from before
+    this parameter existed (ADR-009 addendum, 2026-09-09). Intended
+    for a caller to observe real progress through the grid, not to
+    influence the selection itself.
     """
     log_rate = np.log1p(rate_series.to_numpy(dtype=float))
     best: SarimaOrder | None = None
@@ -66,12 +80,17 @@ def select_sarima_order(rate_series: pd.Series) -> SarimaOrder:
                             enforce_invertibility=False,
                         ).fit(disp=False)
                     except Exception:
+                        if on_candidate is not None:
+                            on_candidate(order, seasonal_order, None, False)
                         continue
                     # A fit that raises no exception can still have
                     # failed to converge (statsmodels only warns, it
                     # does not raise) -- such a fit's AIC is
                     # unreliable and must not win the comparison.
-                    if not fitted.mle_retvals.get("converged", True):
+                    converged = fitted.mle_retvals.get("converged", True)
+                    if on_candidate is not None:
+                        on_candidate(order, seasonal_order, float(fitted.aic), converged)
+                    if not converged:
                         continue
                     if best is None or fitted.aic < best.aic:
                         best = SarimaOrder(order, seasonal_order, float(fitted.aic))

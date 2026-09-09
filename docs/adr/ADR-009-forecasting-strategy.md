@@ -242,3 +242,52 @@ All four locked tracks, their exact month counts, and their reported
 MASE values are unchanged after these fixes (re-verified against the
 real data). Full suite after fixes: 154 passed, 0 failed (151 + 3 new
 tests: 1 phantom-track regression, 2 non-convergence-rejection).
+
+## Addendum (2026-09-09) — progress-reporting callbacks for Milestone 8
+
+Milestone 8's UI design (ADR-010) calls for showing genuine,
+real-time progress during the two slow steps this ADR already
+documents (order selection, rolling-origin backtest) -- not a fake
+spinner. Inspecting the actual API before designing that UI feature
+found neither `select_sarima_order()` nor `rolling_origin_backtest()`
+exposed any hook for this: both are plain, synchronous loops that run
+entirely internally and return only the final result.
+
+**Decision:** add purely additive, optional callback parameters to
+both functions, defaulting to `None`:
+
+- `select_sarima_order(rate_series, on_candidate=None)` --
+  `on_candidate(order, seasonal_order, aic, converged)` is called
+  after every candidate fit attempt in the 36-point grid. `aic` is
+  `None` if the fit raised an exception (never a fabricated value).
+- `rolling_origin_backtest(..., on_origin=None)` --
+  `on_origin(completed, total)` is called after every origin,
+  1-based, so a caller can display real completion (e.g. "14 / 34
+  origins").
+
+**Why this is safe to add to a frozen, Antigravity-reviewed
+milestone:** the parameters are optional and default to `None`, and
+every call site inside this codebase (`forecast_track()`, M7's own
+tests) passes no callback -- confirmed by re-running the full
+pre-existing test suite before writing any new test, which produced
+the identical 154-passed baseline as before this change, with zero
+modification to any existing test. This is additive, not a revision
+of any existing decision in this ADR.
+
+**Verified** against real Maldives data before writing tests:
+`on_candidate` reports exactly 36 candidates (matching the 3x3x2x2
+grid), the function's own returned `SarimaOrder` corresponds exactly
+to one reported converged candidate, and `on_origin` correctly
+reaches `completed == total` (34/34) at the end of a real backtest.
+
+7 new tests added to the existing M7 test files (not a new file,
+since this is squarely an M7 change): default-`None`
+backward-compatibility for both functions, full-grid reporting,
+AIC/converged consistency with the actual chosen order, `None`-not-
+fabricated AIC on exception, monotonic 1-based completion counting,
+and total-count stability across callback invocations within one run.
+Full suite: 161 passed, 0 failed (154 + 7 new).
+
+Milestone 8's actual UI usage of these hooks is documented in
+ADR-010, not here -- this addendum covers only the M7-side API
+change.

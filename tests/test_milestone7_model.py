@@ -122,3 +122,49 @@ def test_fit_and_forecast_sarima_raises_on_non_converged_final_fit():
     with patch("surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model):
         with pytest.raises(ValueError, match="did not converge"):
             fit_and_forecast_sarima(series, order, horizon=3)
+
+
+def test_select_sarima_order_default_none_callback_is_backward_compatible():
+    """ADR-009 addendum (2026-09-09): on_candidate defaults to None and
+    must not change behavior or raise -- this is the regression
+    guarantee the whole addendum depends on.
+    """
+    series = _synthetic_seasonal_series()
+    result = select_sarima_order(series)  # no on_candidate passed at all
+    assert isinstance(result, SarimaOrder)
+
+
+def test_select_sarima_order_on_candidate_reports_every_grid_point():
+    series = _synthetic_seasonal_series()
+    seen = []
+    select_sarima_order(series, on_candidate=lambda *args: seen.append(args))
+    # 3 (p) x 3 (q) x 2 (seasonal_p) x 2 (seasonal_q) = 36, per ADR-009.
+    assert len(seen) == 36
+
+
+def test_select_sarima_order_on_candidate_reports_converged_and_aic_together():
+    series = _synthetic_seasonal_series()
+    seen = []
+    order = select_sarima_order(series, on_candidate=lambda *args: seen.append(args))
+    matching = [
+        c for c in seen if c[0] == order.order and c[1] == order.seasonal_order and c[3]
+    ]
+    assert len(matching) == 1
+    assert matching[0][2] == pytest.approx(order.aic)
+
+
+def test_select_sarima_order_on_candidate_reports_none_aic_on_exception():
+    """A candidate that raises (not just fails to converge) must report
+    aic=None, converged=False -- never a fabricated AIC value.
+    """
+    from unittest.mock import patch
+
+    series = _synthetic_seasonal_series()
+    seen = []
+    with patch(
+        "surveillance_platform.forecasting.model.SARIMAX", side_effect=ValueError("boom")
+    ):
+        with pytest.raises(ValueError, match="No SARIMA order"):
+            select_sarima_order(series, on_candidate=lambda *args: seen.append(args))
+    assert len(seen) == 36
+    assert all(c[2] is None and c[3] is False for c in seen)
