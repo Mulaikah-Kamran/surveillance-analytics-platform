@@ -232,3 +232,62 @@ concern.
   uninstalled.
 - Per ADR Discipline, any change to this strategy is made as an
   explicit new ADR revision.
+
+## Addendum (2026-09-09) — population data sourcing
+
+Not part of the original decision list: how EDA's optional population
+normalization and Forecasting's required `population_by_country`
+(ADR-009) actually obtain population data was never decided anywhere
+-- Decision C covered only the surveillance dataset's own ingestion.
+Surfaced during Batch 4 implementation rather than guessed at.
+
+**Decision:** `data_loading/population_lookup.py` matches the
+dataset's actual Location values against the World Bank's own country
+registry, deterministically and exactly (case-insensitive), never
+fuzzy, never hardcoded to the four ADR-008 countries. What generalizes
+is the *mechanism*, not a coverage guarantee: for any uploaded
+dataset whose Location values can be deterministically matched to the
+registry, the corresponding population data is obtained; an unmatched
+location is simply omitted, falling through to Forecasting's existing
+per-country "population data unavailable" limitation (already built
+and tested in M7) -- not a new failure mode this module needs to
+solve.
+
+- `get_country_iso3_lookup()`: fetches the World Bank country-list
+  endpoint once, cached to disk (mirroring `sample_dataset.py`'s
+  existence-check pattern, since the registry changes extremely
+  rarely), excluding the ~78 "Aggregates" region/income-group entries
+  (verified: 217 real countries remain).
+- `fetch_population_data(location_values)`: case-insensitive exact
+  match only; returns `(country, year, population)` with `country`
+  set to the *original* string from `location_values`, exact casing
+  preserved, never an ISO3 code -- required by M5's `population.py`
+  docstring contract, re-inspected before writing any code here,
+  which explicitly states this matching is "an acquisition-time
+  concern... not this module's."
+- `population_by_country_series()`: reshapes the same fetch into
+  ADR-009's `dict[str, pd.Series]` shape, so one fetch serves both
+  EDA and Forecasting rather than fetching twice.
+- Self-contained (stdlib `urllib` only, no new dependency), for the
+  same M2 acquisition/engineering boundary reasoning as
+  `sample_dataset.py`.
+- Cached at two layers: `data_loading`'s own disk cache for the
+  registry (dataset-independent), and `st.cache_data` at the `ui/`
+  boundary for the per-dataset fetch (`ui/cached_pipeline.py`).
+
+**One real bug caught while wiring this into Page 4**: `analyze()`'s
+`population_normalized` is `None` only when `population_data` itself
+is `None` -- passing a non-`None` but *empty* DataFrame (nothing
+matched) produces a `PopulationNormalizedSummary(rates=[])`, not
+`None`. The page's original `is not None` check would have shown an
+empty "available" section instead of the "not available" caption.
+Fixed to check `is not None and eda.population_normalized.rates`.
+
+**Verified**: end-to-end against the real OpenDengue extract and the
+live World Bank API (all four ADR-008 countries matched correctly;
+172 rate entries in EDA, matching the exact figure from ADR-009's own
+development; 0 of 10 forecast tracks hit the "population data
+unavailable" limitation). The full test suite mocks all network
+calls, per the project's established testing pattern -- live
+verification was performed manually, not re-run on every test
+invocation.
