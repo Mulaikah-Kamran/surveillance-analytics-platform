@@ -82,7 +82,8 @@ _FACTS = [
 ]
 
 if track_key not in session.results.get("forecast_by_track", {}):
-    with st.container(border=True):
+    progress_placeholder = st.empty()
+    with progress_placeholder.container(border=True):
         phase_text = st.empty()
         progress_bar = st.progress(0.0)
         detail_text = st.empty()
@@ -123,8 +124,12 @@ if track_key not in session.results.get("forecast_by_track", {}):
             on_candidate=on_candidate,
             on_origin=on_origin,
         )
-        progress_bar.progress(1.0)
-        st.session_state["analysis_session"] = session
+    # Clear the entire progress panel now that computation is done --
+    # otherwise it lingers above the final results instead of being
+    # replaced by them (caught via a real screenshot walkthrough, not
+    # assumed).
+    progress_placeholder.empty()
+    st.session_state["analysis_session"] = session
 
 result = session.results["forecast_by_track"][track_key]
 
