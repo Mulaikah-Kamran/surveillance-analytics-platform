@@ -117,3 +117,32 @@ def test_report_is_well_formed_html():
     assert report.startswith("<!DOCTYPE html>")
     assert report.rstrip().endswith("</html>")
     assert "Epicurve" in report
+
+
+# --- section navigation ------------------------------------------------
+
+
+def test_nav_only_links_to_sections_actually_present():
+    session = _prepared_session()  # preparation only
+    report = build_report_html(session)
+    assert '<a href="#preparation">' in report
+    assert '<a href="#eda">' not in report
+    assert '<a href="#visualization">' not in report
+    assert '<a href="#forecasting">' not in report
+
+
+def test_nav_links_match_section_ids_present():
+    session = _prepared_session()
+    session = workflow.run_eda(session)
+    report = build_report_html(session)
+    assert '<a href="#preparation">' in report
+    assert '<a href="#eda">' in report
+    assert 'id="preparation"' in report
+    assert 'id="eda"' in report
+
+
+def test_report_includes_viewport_meta_for_mobile():
+    session = _prepared_session()
+    report = build_report_html(session)
+    assert 'name="viewport"' in report
+    assert "width=device-width" in report

@@ -48,11 +48,36 @@ body {
 header {
   background: var(--teal);
   color: #FFFFFF;
-  padding: 2.5rem 3rem;
+  padding: 2.5rem 3rem 1.75rem 3rem;
 }
 header .wordmark { font-size: 1.9rem; font-weight: 600; margin: 0; }
 header .subtitle { opacity: 0.85; margin: 0.25rem 0 0 0; font-size: 0.95rem; }
 header .timestamp { opacity: 0.7; margin-top: 1rem; font-size: 0.85rem; }
+nav.report-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 3rem;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+nav.report-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.9rem 0.75rem;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+nav.report-nav a.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+}
 main { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
 section {
   background: var(--card-bg);
@@ -60,6 +85,7 @@ section {
   border-radius: 6px;
   padding: 1.75rem 2rem;
   margin-top: 2rem;
+  scroll-margin-top: 3.25rem;
 }
 section h2 {
   margin-top: 0;
@@ -72,12 +98,14 @@ section h2 {
 .metric { min-width: 120px; }
 .metric .value { font-size: 1.6rem; font-weight: 600; color: var(--teal); }
 .metric .label { font-size: 0.85rem; color: var(--muted); }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
 th, td {
   text-align: left;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 th { color: var(--muted); font-weight: 600; }
 .warning-banner {
@@ -95,6 +123,39 @@ footer {
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+/* Phone-width layout: tighter padding, stacked metrics, no sticky nav
+   competing for vertical space with the header on a short viewport. */
+@media (max-width: 640px) {
+  header { padding: 1.5rem 1.25rem; }
+  header .wordmark { font-size: 1.5rem; }
+  nav.report-nav { padding: 0 1.25rem; }
+  main { padding: 0 1rem; }
+  section { padding: 1.25rem; margin-top: 1.25rem; }
+  .metric-row { flex-direction: column; gap: 1rem; }
+  footer { padding: 0 1rem; }
+}
+"""
+
+_SCROLL_SPY_SCRIPT = """
+<script>
+(function () {
+  var links = document.querySelectorAll('nav.report-nav a');
+  var sections = Array.prototype.map.call(links, function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  function setActive() {
+    var pos = window.scrollY + 80;
+    var current = sections[0];
+    sections.forEach(function (s) { if (s && s.offsetTop <= pos) current = s; });
+    links.forEach(function (a) {
+      a.classList.toggle('active', current && a.getAttribute('href') === '#' + current.id);
+    });
+  }
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+})();
+</script>
 """
 
 _FONT_LINK = (
@@ -129,12 +190,13 @@ def _preparation_section(session: AnalysisSession) -> str:
         for f in report.quality_findings
     )
     findings_table = (
-        f"<table><tr><th>Check</th><th>Severity</th><th>Message</th></tr>{findings_rows}</table>"
+        f'<div class="table-scroll"><table><tr><th>Check</th><th>Severity</th>'
+        f"<th>Message</th></tr>{findings_rows}</table></div>"
         if report.quality_findings
         else '<p class="caption">No quality issues found.</p>'
     )
     return f"""
-    <section>
+    <section id="preparation">
       <h2>Data Preparation</h2>
       <div class="metric-row">
         {_metric("Rows in", f"{report.rows_in:,}")}
@@ -157,7 +219,7 @@ def _eda_section(session: AnalysisSession) -> str:
         for c in eda.country_comparison.countries
     )
     return f"""
-    <section>
+    <section id="eda">
       <h2>Exploratory Analysis</h2>
       <div class="metric-row">
         {_metric("Mean", f"{d.mean:.1f}")}
@@ -165,10 +227,12 @@ def _eda_section(session: AnalysisSession) -> str:
         {_metric("Max", f"{d.maximum:.0f}")}
         {_metric("Std dev", f"{d.std:.1f}")}
       </div>
-      <table>
-        <tr><th>Country</th><th>Observations</th><th>Mean</th><th>Max</th></tr>
-        {country_rows}
-      </table>
+      <div class="table-scroll">
+        <table>
+          <tr><th>Country</th><th>Observations</th><th>Mean</th><th>Max</th></tr>
+          {country_rows}
+        </table>
+      </div>
     </section>
     """
 
@@ -194,10 +258,10 @@ def _visualization_section(session: AnalysisSession) -> str:
 
     charts_html = "".join(
         f'<h3 style="font-size:1rem;margin-top:1.5rem;">{_esc(title)}</h3>'
-        f"{fig.to_html(include_plotlyjs=False, full_html=False)}"
+        f"{fig.to_html(include_plotlyjs=False, full_html=False, config={'responsive': True})}"
         for title, fig in figures
     )
-    return f"<section><h2>Visualization</h2>{charts_html}</section>"
+    return f'<section id="visualization"><h2>Visualization</h2>{charts_html}</section>'
 
 
 def _forecast_chart(result) -> go.Figure:
@@ -268,7 +332,7 @@ def _forecasting_section(session: AnalysisSession) -> str:
         blocks.append(
             f'<h3 style="font-size:1.05rem;">{label}</h3>{warnings_html}{metrics_html}{chart_html}'
         )
-    return f"<section><h2>Forecasting</h2>{''.join(blocks)}</section>"
+    return f'<section id="forecasting"><h2>Forecasting</h2>{"".join(blocks)}</section>'
 
 
 def build_report_html(session: AnalysisSession) -> str:
@@ -276,20 +340,43 @@ def build_report_html(session: AnalysisSession) -> str:
 
     Only includes sections for stages the session has actually
     completed -- an empty session produces a minimal (but valid)
-    report, not an error.
+    report, not an error. The nav bar is generated from exactly the
+    sections that ended up present, so a section that didn't run never
+    gets a dead link.
     """
     generated_at = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
-    sections = []
-    if "preparation" in session.results:
-        sections.append(_preparation_section(session))
-    sections.append(_eda_section(session))
-    sections.append(_visualization_section(session))
-    sections.append(_forecasting_section(session))
+
+    candidate_sections = [
+        ("preparation", "Data Preparation"),
+        ("eda", "Exploratory Analysis"),
+        ("visualization", "Visualization"),
+        ("forecasting", "Forecasting"),
+    ]
+    section_builders = {
+        "preparation": _preparation_section,
+        "eda": _eda_section,
+        "visualization": _visualization_section,
+        "forecasting": _forecasting_section,
+    }
+    present_sections = []
+    for section_id, label in candidate_sections:
+        if section_id == "preparation" and "preparation" not in session.results:
+            continue
+        html_fragment = section_builders[section_id](session)
+        if html_fragment:
+            present_sections.append((section_id, label, html_fragment))
+
+    nav_links = "".join(
+        f'<a href="#{section_id}">{_esc(label)}</a>'
+        for section_id, label, _ in present_sections
+    )
+    sections_html = "".join(html_fragment for _, _, html_fragment in present_sections)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Epicurve Report</title>
 {_FONT_LINK}
 {_PLOTLY_CDN_SCRIPT}
@@ -301,13 +388,15 @@ def build_report_html(session: AnalysisSession) -> str:
   <p class="subtitle">Public Health Surveillance &amp; Analytics Platform</p>
   <p class="timestamp">Generated {generated_at}</p>
 </header>
+<nav class="report-nav">{nav_links}</nav>
 <main>
-{''.join(sections)}
+{sections_html}
 </main>
 <footer>
   Forecasts are illustrative and evaluative, not operational
   predictions (see docs/adr/ADR-009-forecasting-strategy.md). Reported
   case counts reflect surveillance data, not true disease burden.
 </footer>
+{_SCROLL_SPY_SCRIPT}
 </body>
 </html>"""
