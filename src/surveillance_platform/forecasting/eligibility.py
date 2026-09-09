@@ -110,7 +110,8 @@ def detect_tracks(data: pd.DataFrame, role_config: RoleConfiguration) -> list[Tr
         def resolution_ok(period: pd.Period) -> bool:
             if not has_res:
                 return True
-            return year_resolution.get(period.year) in SUB_ANNUAL_RESOLUTIONS
+            resolution = year_resolution.get(period.year)  # noqa: B023
+            return resolution in SUB_ANNUAL_RESOLUTIONS
 
         def case_def_at(period: pd.Period) -> object:
             if not has_casedef:
@@ -119,15 +120,24 @@ def detect_tracks(data: pd.DataFrame, role_config: RoleConfiguration) -> list[Tr
             # has no case-definition signal of its own; treat it as a
             # continuation of the current run rather than forcing a
             # split on a month with no data to disagree with.
-            return month_case_def.get(period, run_case_def)
+            # run_case_def's late binding is required here, not
+            # accidental: this closure is redefined fresh every outer
+            # (country) loop iteration and called only within that
+            # same iteration, and it must see run_case_def's *current*
+            # value as the inner loop progresses, not a value frozen
+            # at definition time -- exactly what Python's closure
+            # semantics provide.
+            return month_case_def.get(period, run_case_def)  # noqa: B023
 
-        def close_run(run_start: pd.Period, case_def: object, last_seen: pd.Period) -> None:
+        def close_run(
+            run_start: pd.Period, case_def: object, last_seen: pd.Period
+        ) -> None:
             span = pd.period_range(run_start, last_seen, freq="M")
-            gap_count = sum(1 for p in span if p not in present_set)
+            gap_count = sum(1 for p in span if p not in present_set)  # noqa: B023
             n_months = len(span)
             tracks.append(
                 Track(
-                    country=country,
+                    country=country,  # noqa: B023
                     case_definition=case_def,
                     start=run_start,
                     end=last_seen,

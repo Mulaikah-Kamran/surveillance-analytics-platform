@@ -12,8 +12,8 @@ with ADR-009's "per eligible track" wording.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -42,8 +42,12 @@ class SarimaOrder:
 
 def select_sarima_order(
     rate_series: pd.Series,
-    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
-    | None = None,
+    on_candidate: (
+        Callable[
+            [tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None
+        ]
+        | None
+    ) = None,
 ) -> SarimaOrder:
     """AIC grid search within the SARIMA family, on ``log1p(rate_series)``.
 
@@ -70,7 +74,12 @@ def select_sarima_order(
             for seasonal_p in _SEASONAL_P_RANGE:
                 for seasonal_q in _SEASONAL_Q_RANGE:
                     order = (p, _D, q)
-                    seasonal_order = (seasonal_p, _SEASONAL_D, seasonal_q, SEASONAL_PERIOD)
+                    seasonal_order = (
+                        seasonal_p,
+                        _SEASONAL_D,
+                        seasonal_q,
+                        SEASONAL_PERIOD,
+                    )
                     try:
                         fitted = SARIMAX(
                             log_rate,
@@ -79,7 +88,10 @@ def select_sarima_order(
                             enforce_stationarity=False,
                             enforce_invertibility=False,
                         ).fit(disp=False)
-                    except Exception:
+                    except Exception:  # noqa: BLE001 -- SARIMAX can raise many
+                        # distinct exception types for numerical issues across
+                        # a 36-point grid; any of them means this candidate is
+                        # skipped (ADR-009), not a bug to narrow.
                         if on_candidate is not None:
                             on_candidate(order, seasonal_order, None, False)
                         continue
@@ -89,7 +101,9 @@ def select_sarima_order(
                     # unreliable and must not win the comparison.
                     converged = fitted.mle_retvals.get("converged", True)
                     if on_candidate is not None:
-                        on_candidate(order, seasonal_order, float(fitted.aic), converged)
+                        on_candidate(
+                            order, seasonal_order, float(fitted.aic), converged
+                        )
                     if not converged:
                         continue
                     if best is None or fitted.aic < best.aic:

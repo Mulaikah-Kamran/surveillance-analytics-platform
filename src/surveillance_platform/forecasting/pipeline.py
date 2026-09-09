@@ -9,13 +9,16 @@ one result object, never raises on an ordinary data limitation).
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
 from statsmodels.stats.diagnostic import acorr_ljungbox
 
-from surveillance_platform.forecasting.aggregation import monthly_series, population_rate
+from surveillance_platform.forecasting.aggregation import (
+    monthly_series,
+    population_rate,
+)
 from surveillance_platform.forecasting.backtest import (
     HORIZON_MONTHS,
     TRAINING_WINDOW_MONTHS,
@@ -33,7 +36,11 @@ from surveillance_platform.forecasting.model import (
     fit_and_forecast_sarima,
     select_sarima_order,
 )
-from surveillance_platform.forecasting.report import ForecastResult, ResidualDiagnostics, Track
+from surveillance_platform.forecasting.report import (
+    ForecastResult,
+    ResidualDiagnostics,
+    Track,
+)
 from surveillance_platform.role_configuration import RoleConfiguration
 
 
@@ -93,8 +100,12 @@ def forecast_track(
     track: Track,
     population_by_year: pd.Series | None,
     horizon: int = HORIZON_MONTHS,
-    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
-    | None = None,
+    on_candidate: (
+        Callable[
+            [tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None
+        ]
+        | None
+    ) = None,
     on_origin: Callable[[int, int], None] | None = None,
 ) -> ForecastResult:
     """Run the full ADR-009 pipeline for one track.
@@ -146,7 +157,11 @@ def forecast_track(
     forecast_periods = list(pd.period_range(track.end + 1, periods=horizon, freq="M"))
     try:
         mean, lower, upper = fit_and_forecast_sarima(rate, order, horizon)
-        forecast_mean, forecast_lower, forecast_upper = list(mean), list(lower), list(upper)
+        forecast_mean, forecast_lower, forecast_upper = (
+            list(mean),
+            list(lower),
+            list(upper),
+        )
     except ValueError as exc:
         limitations.append(f"Final forecast fit did not converge: {exc}")
         forecast_mean = forecast_lower = forecast_upper = [float("nan")] * horizon
@@ -160,7 +175,10 @@ def forecast_track(
 
     if len(rate) >= TRAINING_WINDOW_MONTHS + horizon:
         records = rolling_origin_backtest(
-            rate, order, training_window=TRAINING_WINDOW_MONTHS, horizon=horizon,
+            rate,
+            order,
+            training_window=TRAINING_WINDOW_MONTHS,
+            horizon=horizon,
             on_origin=on_origin,
         )
         model_metrics = compute_metrics(records) if records else None
@@ -207,6 +225,8 @@ def forecast(
     """
     tracks = detect_tracks(data, role_config)
     return [
-        forecast_track(data, role_config, track, population_by_country.get(track.country), horizon)
+        forecast_track(
+            data, role_config, track, population_by_country.get(track.country), horizon
+        )
         for track in tracks
     ]

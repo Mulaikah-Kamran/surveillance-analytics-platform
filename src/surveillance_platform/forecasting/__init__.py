@@ -24,7 +24,10 @@ Each stage is also independently importable for testing, e.g.
 See ``docs/adr/ADR-009-forecasting-strategy.md`` for the full design.
 """
 
-from surveillance_platform.forecasting.aggregation import monthly_series, population_rate
+from surveillance_platform.forecasting.aggregation import (
+    monthly_series,
+    population_rate,
+)
 from surveillance_platform.forecasting.backtest import (
     BacktestRecord,
     Metrics,
@@ -40,7 +43,11 @@ from surveillance_platform.forecasting.model import (
     select_sarima_order,
 )
 from surveillance_platform.forecasting.pipeline import forecast, forecast_track
-from surveillance_platform.forecasting.report import ForecastResult, ResidualDiagnostics, Track
+from surveillance_platform.forecasting.report import (
+    ForecastResult,
+    ResidualDiagnostics,
+    Track,
+)
 
 __all__ = [
     "BacktestRecord",

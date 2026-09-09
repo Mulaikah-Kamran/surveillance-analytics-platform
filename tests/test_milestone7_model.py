@@ -100,9 +100,13 @@ def test_select_sarima_order_rejects_non_converged_fits():
     mock_model = MagicMock()
     mock_model.fit.return_value = mock_fitted
 
-    with patch("surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model):
-        with pytest.raises(ValueError, match="No SARIMA order"):
-            select_sarima_order(series)
+    with (
+        patch(
+            "surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model
+        ),
+        pytest.raises(ValueError, match="No SARIMA order"),
+    ):
+        select_sarima_order(series)
 
 
 def test_fit_and_forecast_sarima_raises_on_non_converged_final_fit():
@@ -119,9 +123,13 @@ def test_fit_and_forecast_sarima_raises_on_non_converged_final_fit():
     mock_model = MagicMock()
     mock_model.fit.return_value = mock_fitted
 
-    with patch("surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model):
-        with pytest.raises(ValueError, match="did not converge"):
-            fit_and_forecast_sarima(series, order, horizon=3)
+    with (
+        patch(
+            "surveillance_platform.forecasting.model.SARIMAX", return_value=mock_model
+        ),
+        pytest.raises(ValueError, match="did not converge"),
+    ):
+        fit_and_forecast_sarima(series, order, horizon=3)
 
 
 def test_select_sarima_order_default_none_callback_is_backward_compatible():
@@ -161,10 +169,13 @@ def test_select_sarima_order_on_candidate_reports_none_aic_on_exception():
 
     series = _synthetic_seasonal_series()
     seen = []
-    with patch(
-        "surveillance_platform.forecasting.model.SARIMAX", side_effect=ValueError("boom")
+    with (
+        patch(
+            "surveillance_platform.forecasting.model.SARIMAX",
+            side_effect=ValueError("boom"),
+        ),
+        pytest.raises(ValueError, match="No SARIMA order"),
     ):
-        with pytest.raises(ValueError, match="No SARIMA order"):
-            select_sarima_order(series, on_candidate=lambda *args: seen.append(args))
+        select_sarima_order(series, on_candidate=lambda *args: seen.append(args))
     assert len(seen) == 36
     assert all(c[2] is None and c[3] is False for c in seen)
