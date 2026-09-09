@@ -1,0 +1,23 @@
+[theme]
+# ADR-010: deep teal primary, amber accent used only for warnings/
+# status (never decoration), off-white background -- deliberately
+# avoiding the AI-generated-design tells (cream+terracotta,
+# near-black+neon, SaaS-purple gradients).
+primaryColor = "#1B4B4F"
+backgroundColor = "#FAFAF8"
+secondaryBackgroundColor = "#F0EFEA"
+textColor = "#1A1A1A"
+
+# IBM Plex Sans throughout, loaded via Streamlit's native Google
+# Fonts support -- zero custom CSS injection (ADR-010: hand-rolled
+# CSS overrides are a common source of the "hacky" look this project
+# is explicitly trying to avoid).
+font = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+headingFont = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+
+[theme.sidebar]
+backgroundColor = "#F0EFEA"
+
+# Dark mode is Streamlit's own native Light/Dark/System-setting
+# toggle (ADR-010) -- present in the Settings menu automatically,
+# no separate [theme] block needed for it here.
