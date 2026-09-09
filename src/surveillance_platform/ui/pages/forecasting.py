@@ -14,12 +14,17 @@ run_forecast_for_track()) -- st.cache_data is not used here, since it
 cannot cleanly cache a call carrying a live UI-bound progress
 callback as one of its arguments.
 
-DEFERRED (explicit user decision, 2026-09-09): the forecast display
-should also state the track's actual last-known data month, so it's
-clear the "3-month forecast" is relative to that track's own most
-recent real data, not relative to today's calendar date -- this is
-why different tracks show forecasts for different years. Not yet
-implemented; revisit after the main M9 work is complete.
+Forecast-date context (explicit user decision, 2026-09-09, implemented
+2026-09-10): a track's forecast always starts the month immediately
+after that track's own last real data point, not after today's
+calendar date -- necessary, since forecasting past a data gap would
+mean fabricating years of unknown history. This confused a real user
+when different tracks showed forecasts for very different years with
+no visible explanation. Addressed at three points, per an
+Antigravity-reviewed design recommendation: the track selector label
+states the data's end month; an info line states the historical
+range immediately on selection; the results subheader states the
+forecast window explicitly alongside what it's relative to.
 """
 
 import streamlit as st
@@ -53,12 +58,18 @@ population_by_country = data_loading.population_by_country_series(population_dat
 def _track_label(t) -> str:
     case_def = t.case_definition if t.case_definition is not None else "(constant)"
     status = "eligible" if t.eligible else "below threshold"
-    return f"{t.country} — {case_def} ({t.n_months} months, {status})"
+    return f"{t.country} — {case_def} ({t.n_months} months, {status}, data through {t.end})"
 
 
 selected_label = st.selectbox("Track", [_track_label(t) for t in tracks], index=0)
 selected_track = tracks[[_track_label(t) for t in tracks].index(selected_label)]
 track_key = (selected_track.country, selected_track.case_definition)
+
+st.caption(
+    f"This track's real data runs from **{selected_track.start}** to "
+    f"**{selected_track.end}** ({selected_track.n_months} months) -- the forecast "
+    "below starts the month immediately after, not after today's date."
+)
 
 # --- Did-you-know facts, rotated in sync with real progress, not a timer ---
 _FACTS = [
@@ -145,7 +156,21 @@ if result.limitations:
         st.warning(message)
 
 if result.forecast_mean:
-    st.subheader(f"3-month forecast (rate per 100,000) -- {selected_label}")
+    forecast_start = result.forecast_periods[0]
+    forecast_end = result.forecast_periods[-1]
+    case_def = (
+        selected_track.case_definition
+        if selected_track.case_definition is not None
+        else "(constant)"
+    )
+    st.subheader(
+        f"Forecast (rate per 100,000) -- {selected_track.country} — {case_def}: "
+        f"{forecast_start} to {forecast_end}"
+    )
+    st.caption(
+        f"Relative to this track's own last real data month "
+        f"({selected_track.end}), not today's date."
+    )
     st.line_chart(
         {
             "forecast": dict(
