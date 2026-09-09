@@ -13,6 +13,13 @@ session.results["forecast_by_track"] (built up by
 run_forecast_for_track()) -- st.cache_data is not used here, since it
 cannot cleanly cache a call carrying a live UI-bound progress
 callback as one of its arguments.
+
+DEFERRED (explicit user decision, 2026-09-09): the forecast display
+should also state the track's actual last-known data month, so it's
+clear the "3-month forecast" is relative to that track's own most
+recent real data, not relative to today's calendar date -- this is
+why different tracks show forecasts for different years. Not yet
+implemented; revisit after the main M9 work is complete.
 """
 
 import streamlit as st
