@@ -8,7 +8,6 @@ the M4/M5 test style: handcrafted scenarios, no mocking.
 from __future__ import annotations
 
 import pandas as pd
-import pytest
 
 from surveillance_platform.forecasting.eligibility import (
     ELIGIBILITY_FLOOR_MONTHS,

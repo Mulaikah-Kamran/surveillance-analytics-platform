@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -68,7 +68,9 @@ def rolling_origin_backtest(
         actual_window = rate_series.iloc[origin_idx : origin_idx + horizon]
         try:
             model_mean, _, _ = fit_and_forecast_sarima(train, chosen_order, horizon)
-        except Exception:
+        except Exception:  # noqa: BLE001 -- SARIMAX can raise many distinct
+            # exception types for numerical/convergence issues; any of them
+            # means this origin is skipped (ADR-009), not a bug to narrow.
             origin_idx += step
             completed += 1
             if on_origin is not None:
@@ -156,4 +158,6 @@ def compute_baseline_metrics(records: list[BacktestRecord]) -> Metrics | None:
     if not comparable:
         return None
     errors = np.array([abs(r.baseline_forecast - r.actual) for r in comparable])
-    return Metrics(mae=float(errors.mean()), rmse=float(np.sqrt(np.mean(errors**2))), mase=None)
+    return Metrics(
+        mae=float(errors.mean()), rmse=float(np.sqrt(np.mean(errors**2))), mase=None
+    )

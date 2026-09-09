@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from surveillance_platform.forecasting import ForecastResult, forecast, forecast_track
 from surveillance_platform.forecasting.eligibility import detect_tracks
@@ -142,7 +141,10 @@ def test_forecast_track_passes_through_on_candidate_and_on_origin():
     [track] = detect_tracks(data, ROLE_CONFIG)
     candidates_seen, origins_seen = [], []
     result = forecast_track(
-        data, ROLE_CONFIG, track, _population(),
+        data,
+        ROLE_CONFIG,
+        track,
+        _population(),
         on_candidate=lambda *a: candidates_seen.append(a),
         on_origin=lambda *a: origins_seen.append(a),
     )
@@ -156,8 +158,12 @@ def test_forecast_track_with_and_without_callbacks_produce_identical_results():
     data = _seasonal_country_data("Eligiland", 78)
     [track] = detect_tracks(data, ROLE_CONFIG)
     with_cb = forecast_track(
-        data, ROLE_CONFIG, track, _population(),
-        on_candidate=lambda *a: None, on_origin=lambda *a: None,
+        data,
+        ROLE_CONFIG,
+        track,
+        _population(),
+        on_candidate=lambda *a: None,
+        on_origin=lambda *a: None,
     )
     without_cb = forecast_track(data, ROLE_CONFIG, track, _population())
     assert with_cb == without_cb
