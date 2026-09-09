@@ -46,7 +46,9 @@ def monthly_series(
     return monthly.reindex(full_span)
 
 
-def population_rate(monthly_counts: pd.Series, population_by_year: pd.Series) -> pd.Series:
+def population_rate(
+    monthly_counts: pd.Series, population_by_year: pd.Series
+) -> pd.Series:
     """Convert monthly counts to a rate per 100,000 population.
 
     ``population_by_year`` is indexed by calendar year (e.g. the WDI

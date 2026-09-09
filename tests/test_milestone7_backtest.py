@@ -27,7 +27,9 @@ def test_rolling_origin_backtest_produces_expected_record_count():
     # Small windows (not ADR-009's 72/3 defaults) to keep the test fast.
     series = _synthetic_seasonal_series(40)
     order = select_sarima_order(series)
-    records = rolling_origin_backtest(series, order, training_window=30, horizon=2, step=1)
+    records = rolling_origin_backtest(
+        series, order, training_window=30, horizon=2, step=1
+    )
     # Origins run from index 30 to 40-2=38 inclusive -> up to 9 origins
     # x 2 horizon steps. A 30-month training window is deliberately
     # below the real 72-month eligibility floor to keep this test
@@ -41,7 +43,9 @@ def test_rolling_origin_backtest_produces_expected_record_count():
 def test_rolling_origin_backtest_targets_follow_origin_correctly():
     series = _synthetic_seasonal_series(36)
     order = select_sarima_order(series)
-    records = rolling_origin_backtest(series, order, training_window=30, horizon=2, step=1)
+    records = rolling_origin_backtest(
+        series, order, training_window=30, horizon=2, step=1
+    )
     first = records[0]
     assert first.origin == series.index[29]
     assert first.target == series.index[30]
@@ -51,8 +55,12 @@ def test_rolling_origin_backtest_targets_follow_origin_correctly():
 def test_rolling_origin_backtest_step_size_is_respected():
     series = _synthetic_seasonal_series(50)
     order = select_sarima_order(series)
-    records_step1 = rolling_origin_backtest(series, order, training_window=30, horizon=1, step=1)
-    records_step2 = rolling_origin_backtest(series, order, training_window=30, horizon=1, step=2)
+    records_step1 = rolling_origin_backtest(
+        series, order, training_window=30, horizon=1, step=1
+    )
+    records_step2 = rolling_origin_backtest(
+        series, order, training_window=30, horizon=1, step=2
+    )
     assert len(records_step2) < len(records_step1)
 
 
@@ -80,7 +88,9 @@ def test_compute_metrics_mase_below_one_when_model_beats_baseline():
 
 def test_compute_metrics_mase_none_when_no_baseline_available():
     records = [
-        BacktestRecord(pd.Period("2020-01"), pd.Period("2020-02"), 1, 10.0, float("nan"), 10.0),
+        BacktestRecord(
+            pd.Period("2020-01"), pd.Period("2020-02"), 1, 10.0, float("nan"), 10.0
+        ),
     ]
     metrics = compute_metrics(records)
     assert metrics.mase is None
@@ -107,7 +117,10 @@ def test_rolling_origin_backtest_on_origin_reaches_completed_equals_total():
     order = select_sarima_order(series)
     seen = []
     rolling_origin_backtest(
-        series, order, training_window=30, horizon=2,
+        series,
+        order,
+        training_window=30,
+        horizon=2,
         on_origin=lambda completed, total: seen.append((completed, total)),
     )
     assert len(seen) > 0
@@ -126,7 +139,10 @@ def test_rolling_origin_backtest_on_origin_total_is_stable_across_calls():
     order = select_sarima_order(series)
     totals_seen = set()
     rolling_origin_backtest(
-        series, order, training_window=30, horizon=2,
+        series,
+        order,
+        training_window=30,
+        horizon=2,
         on_origin=lambda completed, total: totals_seen.add(total),
     )
     assert len(totals_seen) == 1
