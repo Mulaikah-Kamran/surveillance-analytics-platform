@@ -1,14 +1,11 @@
 # Decision Log — Milestone 9 Validation Dataset Evaluation
 
 **Date started:** 2026-09-09
-**Status:** In progress. HDX's disease-outbreaks dataset, initially
-accepted, was corrected to REJECTED once the primary source's own
-stated limitations were read in full (see below) — the earlier
-acceptance was based on incomplete evidence and is retracted, not
-left standing alongside the correction. CDC NNDSS (candidate 3) is
-now the leading candidate, with one open verification remaining
-(historical depth across combined yearly resources) before it can be
-locked via a formal ADR.
+**Status:** Locked via [ADR-011](../adr/ADR-011-m9-validation-dataset-selection.md).
+CDC NNDSS (2022–2026 single-table resource) accepted as the Milestone
+9 validation dataset. This log remains the full supporting evidence
+record; the ADR states the decision and its consequences without
+repeating the evaluation detail below.
 **Scope:** Selects the "one additional surveillance dataset" the
 Evaluation Question (PFD Section 7) and Milestone 9 (Section 29)
 require, against the four criteria in PFD Section 12: public
@@ -269,7 +266,13 @@ confirming continuity — before this candidate can be accepted.
 Repeating the discipline that corrected Candidate 2: do not accept on
 partial verification.
 
-**Status: promising, not yet decided.** Next step: verify whether
-per-year resources can be combined into a genuinely continuous,
-≥72-month run for at least one condition, before drafting the formal
-ADR.
+**Status: ACCEPTED.** Historical-depth verification completed: CDC
+confirms weekly data back to 2014, but a real format break at
+February 2022 (wide-format per-year tables migrating to one
+long-format table, with confirmed column-naming inconsistency even
+within a single pre-2022 file) makes harmonizing the full archive an
+unbounded task disproportionate to what Milestone 9 needs to test.
+Decision: use only the 2022–2026 single-table resource, accepting in
+advance that Forecasting will correctly find zero eligible tracks
+(insufficient span, not a missing measure) as a legitimate, honest M9
+finding. Locked via [ADR-011](../adr/ADR-011-m9-validation-dataset-selection.md).

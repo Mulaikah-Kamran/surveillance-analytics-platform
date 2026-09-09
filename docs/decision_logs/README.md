@@ -15,14 +15,13 @@ should be able to see *why* a decision was made, not just what it was.
   Milestone 2 decisions are recorded here instead, without their own ADR).
 - [`2026-09-09_m9_dataset_evaluation.md`](2026-09-09_m9_dataset_evaluation.md) —
   Milestone 9 validation-dataset evaluation against PFD Section 12's
-  four criteria, following the same accessibility-verification
-  precedent the Risk Register's R-001 already established for PAHO
-  PLISA. Project Tycho rejected on accessibility grounds (seven
-  independent access failures); HDX's disease-outbreaks dataset
-  initially accepted, then corrected to rejected once the primary
-  source revealed no genuine numeric measure exists at all (not just
-  a forecasting-eligibility limitation); CDC NNDSS now the leading
-  candidate, with historical-depth verification still open.
+  four criteria, now formally locked as
+  [ADR-011](../adr/ADR-011-m9-validation-dataset-selection.md). Project
+  Tycho rejected on accessibility (seven independent access failures);
+  HDX's disease-outbreaks dataset initially accepted, then corrected
+  to rejected once the primary source revealed no genuine numeric
+  measure exists at all; WHO GHO checked as a comparison and found to
+  share HDX's annual-only limitation; CDC NNDSS (2022–2026) accepted.
 
 ## Decision Logs vs. ADRs
 

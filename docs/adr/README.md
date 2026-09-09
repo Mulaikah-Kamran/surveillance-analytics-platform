@@ -27,6 +27,7 @@ every dependent document, never silently.
 | [ADR-008](ADR-008-study-country-selection.md) | Study Country Selection |
 | [ADR-009](ADR-009-forecasting-strategy.md) | Forecasting Input, Model, and Evaluation Strategy |
 | [ADR-010](ADR-010-ui-integration-strategy.md) | UI Integration Strategy |
+| [ADR-011](ADR-011-m9-validation-dataset-selection.md) | Milestone 9 Validation Dataset Selection |
 
 ADR-001 through ADR-007 were locked during project planning (Phase 0)
 and are reproduced here from the Freeze Document, Section 18, as the
@@ -40,4 +41,7 @@ actual acquired data, the specific model/input/evaluation decisions
 that ADR-005 deliberately left open during planning. ADR-010 resolves,
 in the same evidence-based way, the Workflow Controller, Analysis
 Session, dataset-ingestion, and UI-specific decisions ADR-006
-deliberately left open.
+deliberately left open. ADR-011 resolves the validation-dataset choice
+the Risk Register's R-001 deliberately left open during planning,
+following the same accessibility-verification standard R-001 already
+established when it rejected the originally-considered candidate.
