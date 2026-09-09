@@ -89,3 +89,44 @@ def test_compute_metrics_mase_none_when_no_baseline_available():
 def test_compute_metrics_raises_on_empty_records():
     with pytest.raises(ValueError):
         compute_metrics([])
+
+
+def test_rolling_origin_backtest_default_none_callback_is_backward_compatible():
+    """ADR-009 addendum (2026-09-09): on_origin defaults to None and
+    must not change behavior or raise -- the regression guarantee the
+    whole addendum depends on.
+    """
+    series = _synthetic_seasonal_series(40)
+    order = select_sarima_order(series)
+    records = rolling_origin_backtest(series, order, training_window=30, horizon=2)
+    assert isinstance(records, list)
+
+
+def test_rolling_origin_backtest_on_origin_reaches_completed_equals_total():
+    series = _synthetic_seasonal_series(40)
+    order = select_sarima_order(series)
+    seen = []
+    rolling_origin_backtest(
+        series, order, training_window=30, horizon=2,
+        on_origin=lambda completed, total: seen.append((completed, total)),
+    )
+    assert len(seen) > 0
+    final_completed, final_total = seen[-1]
+    assert final_completed == final_total
+    # Monotonically increasing completed count, 1-based.
+    assert [c for c, _ in seen] == list(range(1, len(seen) + 1))
+
+
+def test_rolling_origin_backtest_on_origin_total_is_stable_across_calls():
+    """The reported 'total' must be the same value on every callback
+    invocation within one backtest call -- it's the total origin
+    count for the whole run, not a running estimate.
+    """
+    series = _synthetic_seasonal_series(40)
+    order = select_sarima_order(series)
+    totals_seen = set()
+    rolling_origin_backtest(
+        series, order, training_window=30, horizon=2,
+        on_origin=lambda completed, total: totals_seen.add(total),
+    )
+    assert len(totals_seen) == 1

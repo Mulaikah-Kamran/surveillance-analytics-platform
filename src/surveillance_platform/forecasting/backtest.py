@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 import pandas as pd
@@ -39,6 +40,7 @@ def rolling_origin_backtest(
     training_window: int = TRAINING_WINDOW_MONTHS,
     horizon: int = HORIZON_MONTHS,
     step: int = STEP_MONTHS,
+    on_origin: Callable[[int, int], None] | None = None,
 ) -> list[BacktestRecord]:
     """Expanding-window backtest: refit at each origin, forecast ``horizon`` ahead.
 
@@ -48,10 +50,19 @@ def rolling_origin_backtest(
     inconsistent with ADR-009's "per eligible track" wording. A
     target month with a missing (``NaN``) actual is skipped, not
     treated as an error.
+
+    ``on_origin``, if given, is called after every origin is processed
+    (whether its fit succeeded or was skipped) as ``on_origin(index,
+    total)``, both 1-based, so a caller can display real progress
+    through the backtest. Purely additive: default ``None`` means
+    zero behavior change from before this parameter existed (ADR-009
+    addendum, 2026-09-09).
     """
     records: list[BacktestRecord] = []
     n = len(rate_series)
+    total_origins = max(0, (n - horizon - training_window) // step + 1)
     origin_idx = training_window
+    completed = 0
     while origin_idx + horizon <= n:
         train = rate_series.iloc[:origin_idx]
         actual_window = rate_series.iloc[origin_idx : origin_idx + horizon]
@@ -59,6 +70,9 @@ def rolling_origin_backtest(
             model_mean, _, _ = fit_and_forecast_sarima(train, chosen_order, horizon)
         except Exception:
             origin_idx += step
+            completed += 1
+            if on_origin is not None:
+                on_origin(completed, total_origins)
             continue
         baseline_mean = seasonal_naive_forecast(train, horizon)
         for h in range(horizon):
@@ -76,6 +90,9 @@ def rolling_origin_backtest(
                 )
             )
         origin_idx += step
+        completed += 1
+        if on_origin is not None:
+            on_origin(completed, total_origins)
     return records
 
 
