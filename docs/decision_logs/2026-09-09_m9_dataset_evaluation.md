@@ -1,13 +1,14 @@
 # Decision Log — Milestone 9 Validation Dataset Evaluation
 
 **Date started:** 2026-09-09
-**Status:** Decided — HDX's "global dataset of pandemic- and
-epidemic-prone disease outbreaks" accepted as the Milestone 9
-validation dataset. This log remains the supporting evidence; a
-formal ADR locking this choice follows once the M9 Dataset
-Compatibility Report (next step) confirms the structure empirically
-against real acquired data, mirroring how ADR-008 formalized the
-country-selection decision log.
+**Status:** In progress. HDX's disease-outbreaks dataset, initially
+accepted, was corrected to REJECTED once the primary source's own
+stated limitations were read in full (see below) — the earlier
+acceptance was based on incomplete evidence and is retracted, not
+left standing alongside the correction. CDC NNDSS (candidate 3) is
+now the leading candidate, with one open verification remaining
+(historical depth across combined yearly resources) before it can be
+locked via a formal ADR.
 **Scope:** Selects the "one additional surveillance dataset" the
 Evaluation Question (PFD Section 7) and Milestone 9 (Section 29)
 require, against the four criteria in PFD Section 12: public
@@ -156,12 +157,119 @@ trade-off (accessibility vs. exercising the full pipeline) was
 weighed explicitly, not defaulted into by picking whichever candidate
 happened to be reachable.
 
-### Verdict: ACCEPTED, with the forecasting limitation documented as an
-expected finding, not a gap
+### Verdict: REJECTED (corrected — the initial acceptance below was
+based on incomplete evidence)
 
-Proceeding with this dataset. The M9 Dataset Compatibility Report
+This candidate was initially marked ACCEPTED, reasoning that an
+annual-only, sparse structure would still exercise Load/Configure/
+Validate/Data Preparation/EDA/Visualization, with only Forecasting
+affected. That assessment was incomplete. Reading the primary source
+in full (Torres Munguía et al.'s own paper, not just its abstract and
+a Figshare description) surfaced a more fundamental problem, stated
+by the authors themselves:
+
+> "information exclusively captures the occurrence of an outbreak...
+> and not the intensity... does not reflect... the number of cases or
+> deaths associated to the outbreak, which are not available in the
+> DONs."
+
+The dataset's confirmed full column schema (`Country, iso2, iso3,
+Year, icd10n/103n/104n [+codes], icd11 fields, Disease, DONs,
+Definition`) contains no case-count or death-count field anywhere.
+Combined with the earlier finding that the COVID-sourced portion is
+binary (1 if any case that year, 0 otherwise), this means **no
+numeric magnitude column exists in this dataset at all** — not just
+insufficient granularity for forecasting, but no valid mapping for
+the required Surveillance Measure role (ADR-004) in the first place.
+Mapping it to the presence-indicator would make every value `1`,
+degenerate for EDA's own descriptive statistics, not just forecasting.
+
+This is a materially different, more serious finding than "forecasting
+will report zero eligible tracks" (which remains a legitimate,
+survivable M9 finding for a source that does have a genuine measure).
+It fails PFD Section 12's "compatible analytical structure" criterion
+outright, not just the forecasting-specific portion of it. The lesson
+carried forward: verify a candidate's actual measure column against
+the primary source directly (not a secondary description or abstract)
+before accepting, since "the paper's own authors describe the
+Measurement(s) as 'disease outbreaks'" was not, on its own, sufficient
+signal that a usable numeric measure existed.
+
+**Superseded initial assessment (retained for the record, not
+authoritative):**
+
+~~Proceeding with this dataset. The M9 Dataset Compatibility Report
 (next step, before any implementation) will assess the exact
 structure against our role contract in full, including confirming
 this forecasting-eligibility expectation empirically once the real
 file is acquired, rather than resting on the paper's description
-alone.
+alone.~~
+
+---
+
+## Candidate 3: CDC NNDSS (National Notifiable Diseases Surveillance System)
+
+### Rationale for this direction
+
+Both prior candidates failed for structural reasons related to their
+category, not bad luck: general-purpose archives (Tycho) and
+humanitarian data aggregators (HDX) are not primarily built around
+continuous case-count reporting the way a country's own notifiable-
+disease surveillance system is. This candidate instead targets a
+government-run, currently active surveillance system directly — the
+same category of institution that produces OpenDengue-like data in
+the first place, just for a different country and different diseases.
+
+### Accessibility — confirmed directly with real data, not just documentation
+
+`https://data.cdc.gov/resource/x9gk-5huc.json` (Socrata SODA API,
+`accessLevel: public` per its own catalog.data.gov metadata) returns
+real data via a plain unauthenticated `curl` request — no API key, no
+login, no registration. Verified directly:
+
+```
+curl "https://data.cdc.gov/resource/x9gk-5huc.json?\$limit=5"
+-> HTTP 200, real rows returned instantly
+```
+
+### Structure — confirmed with real pulled data
+
+- **Weekly granularity**, confirmed empirically (`year`, `week`
+  fields with real values, not just claimed in documentation).
+- **Real, large, meaningful numeric case counts** — e.g. Chlamydia
+  trachomatis infection, 2023 week 32: current-period count 37,668,
+  cumulative counts in the hundreds of thousands. This directly
+  resolves the exact problem that sank Candidate 2 — a genuine
+  numeric Surveillance Measure exists.
+- **Non-dengue, rich disease catalog** — confirmed via direct query:
+  Anthrax, multiple arboviral diseases (Chikungunya, Eastern/Western
+  equine encephalitis, Jamestown Canyon, La Crosse, Powassan, St.
+  Louis encephalitis, West Nile), Babesiosis, Botulism (3 subtypes),
+  Brucellosis, Campylobacteriosis, and more.
+- **Mixed location granularity within one table** (`states` field
+  contains national totals, regional aggregates, and individual
+  states together, e.g. "TOTAL", "US RESIDENTS", "NEW ENGLAND",
+  "CONNECTICUT") — genuinely analogous to the mixed-resolution
+  problem our own `S_res` sanity check (ADR-010) was built for,
+  under a different source's own convention. A legitimately
+  interesting thing for M9 to exercise, not just a nuisance to filter
+  past.
+- **Scale**: 1,974,840 rows in this resource alone.
+
+### Open question — not yet resolved, do not treat as settled
+
+This specific resource spans only 2022–2026 (~4 years), which is
+*shorter* than ADR-009's own 72-month eligibility floor. CDC
+publishes per-year weekly tables going back further (references found
+to tables from 2018 onward, and MMWR archives to 1952), but these may
+live as **separate yearly Socrata resources** requiring concatenation
+into one continuous run, not a single resource covering the full
+span. This must be verified empirically — combining resources and
+confirming continuity — before this candidate can be accepted.
+Repeating the discipline that corrected Candidate 2: do not accept on
+partial verification.
+
+**Status: promising, not yet decided.** Next step: verify whether
+per-year resources can be combined into a genuinely continuous,
+≥72-month run for at least one condition, before drafting the formal
+ADR.

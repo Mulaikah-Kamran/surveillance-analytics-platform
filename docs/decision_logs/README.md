@@ -18,10 +18,11 @@ should be able to see *why* a decision was made, not just what it was.
   four criteria, following the same accessibility-verification
   precedent the Risk Register's R-001 already established for PAHO
   PLISA. Project Tycho rejected on accessibility grounds (seven
-  independent access failures); HDX's global disease-outbreaks
-  dataset accepted, with its annual-only, sparse structure's expected
-  effect on forecasting eligibility weighed explicitly rather than
-  overlooked.
+  independent access failures); HDX's disease-outbreaks dataset
+  initially accepted, then corrected to rejected once the primary
+  source revealed no genuine numeric measure exists at all (not just
+  a forecasting-eligibility limitation); CDC NNDSS now the leading
+  candidate, with historical-depth verification still open.
 
 ## Decision Logs vs. ADRs
 
