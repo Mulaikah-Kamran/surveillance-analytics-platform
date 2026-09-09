@@ -31,3 +31,11 @@ plotly==6.9.0
 # introduced here per Principle 4, with SARIMA's specific justification
 # recorded in ADR-009. Verified compatible with pandas==3.0.5/Python 3.12.
 statsmodels==0.15.0
+
+# Milestone 8 (UI Integration) — Streamlit is the locked presentation
+# layer (ADR-006, Section 26 dependency table). Introduced now, at the
+# milestone that first requires it, per Principle 4. Verified
+# compatible with pandas==3.0.5/Python 3.12; verified st.cache_data
+# correctly hashes/caches this project's actual RoleConfiguration and
+# ForecastResult objects (ADR-010).
+streamlit==1.63.0
