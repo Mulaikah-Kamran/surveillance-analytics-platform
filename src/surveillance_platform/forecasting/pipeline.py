@@ -9,6 +9,8 @@ one result object, never raises on an ordinary data limitation).
 
 from __future__ import annotations
 
+from typing import Callable
+
 import numpy as np
 import pandas as pd
 from statsmodels.stats.diagnostic import acorr_ljungbox
@@ -91,6 +93,9 @@ def forecast_track(
     track: Track,
     population_by_year: pd.Series | None,
     horizon: int = HORIZON_MONTHS,
+    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
+    | None = None,
+    on_origin: Callable[[int, int], None] | None = None,
 ) -> ForecastResult:
     """Run the full ADR-009 pipeline for one track.
 
@@ -101,6 +106,13 @@ def forecast_track(
     silently worked around with a smaller window (ADR-009 Point 7).
     Never raises on an ordinary data limitation; failures are recorded
     in ``limitations`` and the corresponding fields left empty/``None``.
+
+    ``on_candidate``/``on_origin``, if given, are passed straight
+    through to :func:`select_sarima_order`/:func:`rolling_origin_backtest`
+    respectively, for a caller to observe real progress through this
+    one track's order search and backtest. Purely additive: default
+    ``None`` for both means zero behavior change from before these
+    parameters existed (ADR-009 addendum, 2026-09-09).
     """
     limitations: list[str] = []
     if not track.eligible:
@@ -126,7 +138,7 @@ def forecast_track(
     rate = population_rate(counts, population_by_year)
 
     try:
-        order = select_sarima_order(rate)
+        order = select_sarima_order(rate, on_candidate=on_candidate)
     except ValueError as exc:
         limitations.append(f"SARIMA order selection failed: {exc}")
         return _empty_result(track, limitations)
@@ -148,7 +160,8 @@ def forecast_track(
 
     if len(rate) >= TRAINING_WINDOW_MONTHS + horizon:
         records = rolling_origin_backtest(
-            rate, order, training_window=TRAINING_WINDOW_MONTHS, horizon=horizon
+            rate, order, training_window=TRAINING_WINDOW_MONTHS, horizon=horizon,
+            on_origin=on_origin,
         )
         model_metrics = compute_metrics(records) if records else None
         baseline_metrics = compute_baseline_metrics(records) if records else None

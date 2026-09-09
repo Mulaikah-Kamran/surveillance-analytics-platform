@@ -291,3 +291,33 @@ Full suite: 161 passed, 0 failed (154 + 7 new).
 Milestone 8's actual UI usage of these hooks is documented in
 ADR-010, not here -- this addendum covers only the M7-side API
 change.
+
+## Addendum (2026-09-09, later same day) — forecast_track() pass-through
+
+Building Page 6 (ADR-010) surfaced a gap the previous addendum missed:
+`forecast_track()` -- one layer above `select_sarima_order()`/
+`rolling_origin_backtest()` -- had no way to pass the new callbacks
+through to the calls it makes internally, so a caller reaching the
+pipeline only through `forecast_track()` (as the UI does) still had no
+progress signal.
+
+**Decision:** add the same two optional, default-`None` parameters to
+`forecast_track()`, passed straight through to its internal
+`select_sarima_order()`/`rolling_origin_backtest()` calls. `forecast()`
+itself (which loops over every detected track at once) is deliberately
+left unchanged -- a single flat callback across a batch that includes
+several tiny ineligible fragments (10 tracks for the real four-country
+dataset, only 3 eligible) would have no way to indicate *which* track
+progress belongs to. Milestone 8 instead calls `detect_tracks()` for
+its track selector and `forecast_track()` directly for whichever one
+track is currently selected, where a single callback is unambiguous.
+
+**Verified before writing tests**, same discipline as the addendum
+above: full suite re-run with the change but no new tests yet --
+identical 161-passed baseline. Real-data check against Maldives'
+eligible track: 36 candidates reported, final origin `(34, 34)`, and
+`forecast_track()`'s return value is dataclass-equal with and without
+callbacks attached (confirmed via `==`, not just visual inspection).
+
+3 new tests in `test_milestone7_pipeline.py`. Full suite: 164 passed,
+0 failed (161 + 3 new).

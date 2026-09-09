@@ -124,3 +124,40 @@ def test_forecast_with_no_tracks_returns_empty_list():
     data = _seasonal_country_data("Eligiland", 78).iloc[0:0]
     results = forecast(data, ROLE_CONFIG, {})
     assert results == []
+
+
+def test_forecast_track_default_none_callbacks_are_backward_compatible():
+    """ADR-009 addendum (2026-09-09): on_candidate/on_origin default to
+    None and must not change forecast_track()'s behavior -- the
+    regression guarantee this addendum depends on.
+    """
+    data = _seasonal_country_data("Eligiland", 78)
+    [track] = detect_tracks(data, ROLE_CONFIG)
+    result = forecast_track(data, ROLE_CONFIG, track, _population())
+    assert result.model_order is not None
+
+
+def test_forecast_track_passes_through_on_candidate_and_on_origin():
+    data = _seasonal_country_data("Eligiland", 78)
+    [track] = detect_tracks(data, ROLE_CONFIG)
+    candidates_seen, origins_seen = [], []
+    result = forecast_track(
+        data, ROLE_CONFIG, track, _population(),
+        on_candidate=lambda *a: candidates_seen.append(a),
+        on_origin=lambda *a: origins_seen.append(a),
+    )
+    assert len(candidates_seen) == 36  # 3x3x2x2 grid, per ADR-009
+    assert len(origins_seen) > 0
+    assert origins_seen[-1][0] == origins_seen[-1][1]  # completed == total
+    assert result.model_order is not None
+
+
+def test_forecast_track_with_and_without_callbacks_produce_identical_results():
+    data = _seasonal_country_data("Eligiland", 78)
+    [track] = detect_tracks(data, ROLE_CONFIG)
+    with_cb = forecast_track(
+        data, ROLE_CONFIG, track, _population(),
+        on_candidate=lambda *a: None, on_origin=lambda *a: None,
+    )
+    without_cb = forecast_track(data, ROLE_CONFIG, track, _population())
+    assert with_cb == without_cb
