@@ -12,12 +12,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from surveillance_platform.forecasting import detect_tracks
 from surveillance_platform.role_configuration import RoleConfiguration
 from surveillance_platform.workflow import (
     AnalysisSession,
     configure_roles,
     create_session,
     run_eda,
+    run_forecast_for_track,
     run_forecasting,
     run_preparation,
     run_visualization,
@@ -179,3 +181,67 @@ def test_controller_functions_never_mutate_input_session():
     assert s1.status == "Created" and s1.role_config is None
     assert s2.status == "Configured" and "preparation" not in s2.results
     assert s3.status == "Running"
+
+
+# --- run_forecast_for_track (ADR-010) ---------------------------------------
+
+
+def test_run_forecast_for_track_requires_completed_preparation():
+    session = create_session()
+    with pytest.raises(ValueError, match="requires a completed preparation stage"):
+        run_forecast_for_track(session, track=None, population_by_year=None)
+
+
+def test_run_forecast_for_track_stores_result_keyed_by_country_and_case_definition():
+    session = run_preparation(
+        configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+    )
+    [track] = detect_tracks(session.results["preparation"].data, ROLE_CONFIG)
+    updated = run_forecast_for_track(session, track, population_by_year=None)
+    assert updated.status == "Completed"
+    key = (track.country, track.case_definition)
+    assert key in updated.results["forecast_by_track"]
+
+
+def test_run_forecast_for_track_passes_through_progress_callbacks():
+    session = run_preparation(
+        configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+    )
+    [track] = detect_tracks(session.results["preparation"].data, ROLE_CONFIG)
+    # population_by_year=None short-circuits before SARIMA fitting even
+    # starts (existing, already-tested M7 behavior) -- a real
+    # population series is needed to actually reach select_sarima_order().
+    population = pd.Series({y: 1_000_000 for y in range(2010, 2012)})
+    candidates_seen = []
+    run_forecast_for_track(
+        session, track, population_by_year=population,
+        on_candidate=lambda *a: candidates_seen.append(a),
+    )
+    assert len(candidates_seen) == 36  # 3x3x2x2 grid, regardless of eligibility
+
+
+def test_run_forecast_for_track_accumulates_multiple_tracks_without_overwriting():
+    """Calling this twice for two different tracks must keep both
+    results in forecast_by_track, not overwrite the first.
+    """
+    data_a = _valid_dataset()
+    data_b = _valid_dataset()
+    data_b["adm_0_name"] = "Otherland"
+    combined = pd.concat([data_a, data_b], ignore_index=True)
+
+    session = run_preparation(configure_roles(set_dataset(create_session(), combined), ROLE_CONFIG))
+    tracks = detect_tracks(session.results["preparation"].data, ROLE_CONFIG)
+    assert len(tracks) == 2
+
+    session = run_forecast_for_track(session, tracks[0], population_by_year=None)
+    session = run_forecast_for_track(session, tracks[1], population_by_year=None)
+    assert len(session.results["forecast_by_track"]) == 2
+
+
+def test_run_forecast_for_track_does_not_mutate_input_session():
+    session = run_preparation(
+        configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+    )
+    [track] = detect_tracks(session.results["preparation"].data, ROLE_CONFIG)
+    run_forecast_for_track(session, track, population_by_year=None)
+    assert "forecast_by_track" not in session.results

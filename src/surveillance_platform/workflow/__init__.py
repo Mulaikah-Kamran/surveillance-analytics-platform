@@ -15,6 +15,10 @@ Public API:
   :func:`run_forecasting` -- the controller functions, each taking an
   ``AnalysisSession`` and returning a new one (never mutates its
   input).
+* :func:`run_forecast_for_track` -- computes a single selected track
+  at a time (not the whole batch), with optional progress callbacks,
+  keyed into ``results["forecast_by_track"]`` -- used by Milestone 8's
+  interactive track selector (ADR-010).
 
 See ``docs/adr/ADR-010-ui-integration-strategy.md`` for the full design.
 """
@@ -23,6 +27,7 @@ from surveillance_platform.workflow.controller import (
     configure_roles,
     create_session,
     run_eda,
+    run_forecast_for_track,
     run_forecasting,
     run_preparation,
     run_visualization,
@@ -36,6 +41,7 @@ __all__ = [
     "configure_roles",
     "create_session",
     "run_eda",
+    "run_forecast_for_track",
     "run_forecasting",
     "run_preparation",
     "run_visualization",

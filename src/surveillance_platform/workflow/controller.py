@@ -14,13 +14,14 @@ the "never mutates" convention M4-M7 already established.
 from __future__ import annotations
 
 import dataclasses
+from typing import Callable
 
 import pandas as pd
 
 from surveillance_platform.data_preparation import prepare
 from surveillance_platform.data_preparation.exceptions import DataPreparationError
 from surveillance_platform.eda import analyze
-from surveillance_platform.forecasting import forecast
+from surveillance_platform.forecasting import Track, forecast, forecast_track
 from surveillance_platform.role_configuration import RoleConfiguration, validate
 from surveillance_platform.role_configuration.exceptions import RoleConfigurationError
 from surveillance_platform.visualization import visualize
@@ -132,4 +133,46 @@ def run_forecasting(
     prepared_data = session.results["preparation"].data
     forecast_results = forecast(prepared_data, session.role_config, population_by_country)
     results = {**session.results, "forecast": forecast_results}
+    return dataclasses.replace(session, status="Completed", results=results)
+
+
+def run_forecast_for_track(
+    session: AnalysisSession,
+    track: Track,
+    population_by_year: pd.Series | None,
+    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
+    | None = None,
+    on_origin: Callable[[int, int], None] | None = None,
+) -> AnalysisSession:
+    """Run forecast_track() for exactly one selected track (ADR-010).
+
+    Unlike run_forecasting() (which computes every detected track in
+    one call), this computes a single track at a time, keyed by
+    ``(track.country, track.case_definition)`` in
+    ``results["forecast_by_track"]`` -- so a caller (Milestone 8's
+    track selector) can attach a per-track progress callback
+    unambiguously, which a batch call across many tracks could not
+    (ADR-009's forecast_track() pass-through addendum). Building up
+    this dict across repeated calls lets a Streamlit page treat an
+    already-computed track as a cache hit by checking the dict first,
+    without needing st.cache_data -- which cannot cleanly cache a
+    call carrying a live UI-bound callback argument.
+
+    Requires a completed "preparation" stage. Never raises on an
+    ordinary data limitation (forecast_track() itself never does).
+    """
+    if "preparation" not in session.results:
+        raise ValueError("run_forecast_for_track() requires a completed preparation stage.")
+    prepared_data = session.results["preparation"].data
+    result = forecast_track(
+        prepared_data,
+        session.role_config,
+        track,
+        population_by_year,
+        on_candidate=on_candidate,
+        on_origin=on_origin,
+    )
+    key = (track.country, track.case_definition)
+    forecast_by_track = {**session.results.get("forecast_by_track", {}), key: result}
+    results = {**session.results, "forecast_by_track": forecast_by_track}
     return dataclasses.replace(session, status="Completed", results=results)
