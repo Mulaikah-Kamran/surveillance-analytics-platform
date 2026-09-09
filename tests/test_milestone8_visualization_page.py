@@ -91,3 +91,50 @@ def test_visualization_shows_unavailable_captions_when_optional_figures_absent(
     assert at.exception == []
     captions = [c.value for c in at.caption]
     assert any("not available" in c for c in captions)
+
+
+def test_annual_trend_rendered_via_scrollable_html_embed_not_native_widget():
+    """The mobile-legibility fix: annual_trend's own multi-country
+    subplot grid is unbounded (one column pair per two countries), so
+    it must go through st.components.v1.html() with an explicit,
+    generous width -- not st.plotly_chart(), which Streamlit's own
+    documentation confirms can never exceed its parent container's
+    width no matter what width value is requested.
+
+    AppTest has no first-class way to inspect an st.components.v1.html
+    element's actual rendered HTML/iframe content -- the genuine
+    scroll behavior this produces was verified separately with real
+    Playwright screenshots at both a 1440px desktop and a 390px phone
+    viewport. What's verified here, at the level AppTest can actually
+    check, is that the underlying figure object was mutated with the
+    wider explicit width the fix depends on, and that this multi-
+    country case (unlike the single-country fixture used elsewhere in
+    this file) still renders without exception.
+    """
+    from unittest.mock import patch
+
+    header = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+    rows = "".join(
+        f"{country},2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n"
+        for country in ("Testland", "Otherland")
+        for m in range(1, 13)
+    )
+    csv_bytes = (header + rows).encode()
+
+    with (
+        patch(
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            Path("/tmp/nonexistent_registry.json"),
+        ),
+        patch(
+            "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
+            return_value=[],
+        ),
+    ):
+        at = _app_through_visualization(csv_bytes)
+        at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
+        at.run()
+
+    assert at.exception == []
+    fig = at.session_state["analysis_session"].results["visualization"].annual_trend
+    assert fig.layout.width == 900
