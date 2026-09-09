@@ -36,7 +36,9 @@ if not tracks:
     st.info("No candidate forecasting tracks were detected in this dataset.")
     st.stop()
 
-distinct_locations = sorted(prepared_data[session.role_config.location].unique().tolist())
+distinct_locations = sorted(
+    prepared_data[session.role_config.location].unique().tolist()
+)
 population_data = cached_fetch_population_data(distinct_locations)
 population_by_country = data_loading.population_by_country_series(population_data)
 
@@ -53,18 +55,30 @@ track_key = (selected_track.country, selected_track.case_definition)
 
 # --- Did-you-know facts, rotated in sync with real progress, not a timer ---
 _FACTS = [
-    "Did you know? 'Dengue' is believed to derive from the Swahili phrase "
-    "'dinga pepo', describing a sudden, cramp-like seizure.",
-    "Only female Aedes mosquitoes bite -- they need the blood protein to "
-    "develop their eggs.",
-    "Dengue has four distinct serotypes (DENV-1 to DENV-4); infection with "
-    "one doesn't protect against the others.",
-    "Aedes aegypti, the primary dengue vector, prefers to bite during the "
-    "day, especially early morning and before dusk.",
-    "Unlike malaria mosquitoes, Aedes aegypti can breed in tiny amounts of "
-    "standing water -- even a bottle cap.",
-    "SARIMA models capture seasonality by comparing each month not just to "
-    "its neighbors, but to the same month one full cycle (a year) earlier.",
+    (
+        "Did you know? 'Dengue' is believed to derive from the Swahili phrase "
+        "'dinga pepo', describing a sudden, cramp-like seizure."
+    ),
+    (
+        "Only female Aedes mosquitoes bite -- they need the blood protein to "
+        "develop their eggs."
+    ),
+    (
+        "Dengue has four distinct serotypes (DENV-1 to DENV-4); infection with "
+        "one doesn't protect against the others."
+    ),
+    (
+        "Aedes aegypti, the primary dengue vector, prefers to bite during the "
+        "day, especially early morning and before dusk."
+    ),
+    (
+        "Unlike malaria mosquitoes, Aedes aegypti can breed in tiny amounts of "
+        "standing water -- even a bottle cap."
+    ),
+    (
+        "SARIMA models capture seasonality by comparing each month not just to "
+        "its neighbors, but to the same month one full cycle (a year) earlier."
+    ),
 ]
 
 if track_key not in session.results.get("forecast_by_track", {}):
@@ -122,7 +136,9 @@ if result.forecast_mean:
     st.subheader(f"3-month forecast (rate per 100,000) -- {selected_label}")
     st.line_chart(
         {
-            "forecast": dict(zip([str(p) for p in result.forecast_periods], result.forecast_mean)),
+            "forecast": dict(
+                zip([str(p) for p in result.forecast_periods], result.forecast_mean)
+            ),
         }
     )
 

@@ -19,7 +19,9 @@ from streamlit.testing.v1 import AppTest
 REPO_ROOT = Path(__file__).parent.parent
 APP_PATH = str(REPO_ROOT / "app.py")
 
-VALID_CSV_HEADER = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+VALID_CSV_HEADER = (
+    "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+)
 VALID_CSV_ROWS = "".join(
     f"BANGLADESH,2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n" for m in range(1, 13)
 )
@@ -71,19 +73,19 @@ def mocked_population(tmp_path):
 def _app_through_preparation(csv_bytes: bytes) -> AppTest:
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/1_load_dataset.py")
+    at.switch_page("src/surveillance_platform/ui/pages/load_dataset.py")
     at.run()
     at.get("file_uploader")[0].upload("test.csv", csv_bytes, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
     at.selectbox(key="role_time").select("calendar_start_date")
     at.selectbox(key="role_location").select("adm_0_name")
     at.selectbox(key="role_measure").select("dengue_total")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
     return at
 
@@ -91,7 +93,7 @@ def _app_through_preparation(csv_bytes: bytes) -> AppTest:
 def test_forecasting_without_preparation_shows_warning():
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/6_forecasting.py")
+    at.switch_page("src/surveillance_platform/ui/pages/forecasting.py")
     at.run()
     assert at.exception == []
     assert len(at.warning) > 0
@@ -99,7 +101,7 @@ def test_forecasting_without_preparation_shows_warning():
 
 def test_forecasting_computes_and_stores_result_for_selected_track(mocked_population):
     at = _app_through_preparation(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/6_forecasting.py")
+    at.switch_page("src/surveillance_platform/ui/pages/forecasting.py")
     at.run(timeout=60)
     assert at.exception == []
     session = at.session_state["analysis_session"]
@@ -112,7 +114,7 @@ def test_forecasting_shows_below_threshold_warning_for_short_track(mocked_popula
     -- ADR-009's limitation message must appear as a warning.
     """
     at = _app_through_preparation(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/6_forecasting.py")
+    at.switch_page("src/surveillance_platform/ui/pages/forecasting.py")
     at.run(timeout=60)
     assert at.exception == []
     warnings_text = " ".join(w.value for w in at.warning)
@@ -125,7 +127,7 @@ def test_revisiting_an_already_computed_track_does_not_recompute(mocked_populati
     page still renders without exception on the second pass.
     """
     at = _app_through_preparation(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/6_forecasting.py")
+    at.switch_page("src/surveillance_platform/ui/pages/forecasting.py")
     at.run(timeout=60)
     first_result = at.session_state["analysis_session"].results["forecast_by_track"]
 
@@ -141,7 +143,7 @@ def test_forecasting_page_never_uses_forecast_all_tracks_batch(mocked_population
     only 'forecast_by_track'.
     """
     at = _app_through_preparation(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/6_forecasting.py")
+    at.switch_page("src/surveillance_platform/ui/pages/forecasting.py")
     at.run(timeout=60)
     session = at.session_state["analysis_session"]
     assert "forecast" not in session.results

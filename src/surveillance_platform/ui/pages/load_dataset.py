@@ -41,7 +41,9 @@ if uploaded_file is not None:
     except data_loading.FileTooLargeError as exc:
         st.error(str(exc))
         st.stop()
-    except Exception as exc:  # pragma: no cover -- malformed CSV, not our validation
+    except Exception as exc:  # noqa: BLE001 -- pandas can raise many distinct
+        # parser exception types for a malformed CSV; any of them should show
+        # this same friendly message, not crash the page.
         st.error(f"Could not read this file as a CSV: {exc}")
         st.stop()
 

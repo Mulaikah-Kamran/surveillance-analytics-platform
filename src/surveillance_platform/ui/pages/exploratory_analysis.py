@@ -11,8 +11,11 @@ countries, not as an error for the whole page.
 
 import streamlit as st
 
-from surveillance_platform import data_loading, workflow
-from surveillance_platform.ui.cached_pipeline import cached_fetch_population_data, cached_run_eda
+from surveillance_platform import workflow
+from surveillance_platform.ui.cached_pipeline import (
+    cached_fetch_population_data,
+    cached_run_eda,
+)
 
 st.title("Exploratory Analysis")
 
@@ -23,7 +26,9 @@ if "preparation" not in session.results or session.status == "Failed":
     st.stop()
 
 prepared_data = session.results["preparation"].data
-distinct_locations = sorted(prepared_data[session.role_config.location].unique().tolist())
+distinct_locations = sorted(
+    prepared_data[session.role_config.location].unique().tolist()
+)
 population_data = cached_fetch_population_data(distinct_locations)
 
 session = cached_run_eda(session, population_data)
@@ -65,13 +70,21 @@ else:
 
 if eda.resolution is not None:
     st.subheader("Reporting resolution")
-    st.dataframe({"resolution": list(eda.resolution.counts.keys()),
-                  "count": list(eda.resolution.counts.values())})
+    st.dataframe(
+        {
+            "resolution": list(eda.resolution.counts.keys()),
+            "count": list(eda.resolution.counts.values()),
+        }
+    )
 
 if eda.case_definition is not None:
     st.subheader("Case definitions")
-    st.dataframe({"case definition": list(eda.case_definition.counts.keys()),
-                  "count": list(eda.case_definition.counts.values())})
+    st.dataframe(
+        {
+            "case definition": list(eda.case_definition.counts.keys()),
+            "count": list(eda.case_definition.counts.values()),
+        }
+    )
 
 st.subheader("Country comparison")
 for entry in eda.country_comparison.countries:
@@ -90,7 +103,8 @@ if eda.population_normalized is not None and eda.population_normalized.rates:
             "country": [r.country for r in eda.population_normalized.rates],
             "year": [r.year for r in eda.population_normalized.rates],
             "rate per 100k": [
-                round(r.reported_cases_per_100000, 2) for r in eda.population_normalized.rates
+                round(r.reported_cases_per_100000, 2)
+                for r in eda.population_normalized.rates
             ],
         }
     )
@@ -100,4 +114,6 @@ else:
         "locations matched the World Bank country registry)."
     )
 
-st.success("Exploratory analysis complete. Continue to **Visualization** in the sidebar.")
+st.success(
+    "Exploratory analysis complete. Continue to **Visualization** in the sidebar."
+)

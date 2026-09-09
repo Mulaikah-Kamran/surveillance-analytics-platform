@@ -19,13 +19,13 @@ REPO_ROOT = Path(__file__).parent.parent
 APP_PATH = str(REPO_ROOT / "app.py")
 
 PAGES = [
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/1_load_dataset.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/2_configure_roles.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/3_data_preparation.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/4_exploratory_analysis.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/5_visualization.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/6_forecasting.py"),
-    str(REPO_ROOT / "src/surveillance_platform/ui/pages/7_results_export.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/load_dataset.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/configure_roles.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/data_preparation.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/exploratory_analysis.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/visualization.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/forecasting.py"),
+    str(REPO_ROOT / "src/surveillance_platform/ui/pages/results_export.py"),
 ]
 
 

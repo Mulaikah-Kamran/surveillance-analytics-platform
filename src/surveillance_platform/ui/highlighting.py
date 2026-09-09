@@ -17,7 +17,15 @@ from __future__ import annotations
 import pandas as pd
 
 _TIME_NAME_HINTS = ("date", "time", "period", "month", "year")
-_LOCATION_NAME_HINTS = ("country", "location", "region", "adm", "place", "area", "nation")
+_LOCATION_NAME_HINTS = (
+    "country",
+    "location",
+    "region",
+    "adm",
+    "place",
+    "area",
+    "nation",
+)
 _MEASURE_NAME_HINTS = ("case", "count", "total", "incidence", "cases", "measure")
 _IDENTIFIER_NAME_HINTS = ("id", "uuid", "identifier", "code")
 
@@ -50,7 +58,9 @@ def suggest_roles(data: pd.DataFrame) -> dict[str, str | None]:
         ):
             suggestions["time"] = column
             continue
-        if suggestions["location"] is None and _name_matches(column, _LOCATION_NAME_HINTS):
+        if suggestions["location"] is None and _name_matches(
+            column, _LOCATION_NAME_HINTS
+        ):
             suggestions["location"] = column
             continue
         if suggestions["identifier"] is None and _name_matches(

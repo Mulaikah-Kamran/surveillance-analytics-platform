@@ -39,7 +39,9 @@ def mocked_population_registry(tmp_path):
 
 # 20 months, well-formed -- enough for a meaningful preparation/EDA run
 # without being large enough to slow the test suite down.
-VALID_CSV_HEADER = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+VALID_CSV_HEADER = (
+    "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+)
 VALID_CSV_ROWS = "".join(
     f"Testland,2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n" for m in range(1, 13)
 )
@@ -60,12 +62,12 @@ def _configured_session_app(csv_bytes: bytes) -> AppTest:
     """
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/1_load_dataset.py")
+    at.switch_page("src/surveillance_platform/ui/pages/load_dataset.py")
     at.run()
     at.get("file_uploader")[0].upload("test.csv", csv_bytes, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
     at.selectbox(key="role_time").select("calendar_start_date")
     at.selectbox(key="role_location").select("adm_0_name")
@@ -80,7 +82,7 @@ def _configured_session_app(csv_bytes: bytes) -> AppTest:
 def test_data_preparation_without_dataset_shows_warning():
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
     assert at.exception == []
     assert len(at.warning) > 0
@@ -88,7 +90,7 @@ def test_data_preparation_without_dataset_shows_warning():
 
 def test_data_preparation_succeeds_with_valid_data():
     at = _configured_session_app(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
     assert at.exception == []
     session = at.session_state["analysis_session"]
@@ -99,7 +101,7 @@ def test_data_preparation_succeeds_with_valid_data():
 
 def test_data_preparation_shows_only_diagnostics_on_failure():
     at = _configured_session_app(INVALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
     assert at.exception == []
     session = at.session_state["analysis_session"]
@@ -116,7 +118,7 @@ def test_data_preparation_shows_only_diagnostics_on_failure():
 def test_exploratory_analysis_without_preparation_shows_warning():
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/4_exploratory_analysis.py")
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
     at.run()
     assert at.exception == []
     assert len(at.warning) > 0
@@ -124,9 +126,9 @@ def test_exploratory_analysis_without_preparation_shows_warning():
 
 def test_exploratory_analysis_succeeds_after_preparation(mocked_population_registry):
     at = _configured_session_app(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/4_exploratory_analysis.py")
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
     at.run()
     assert at.exception == []
     session = at.session_state["analysis_session"]
@@ -137,13 +139,13 @@ def test_exploratory_analysis_succeeds_after_preparation(mocked_population_regis
 def test_exploratory_analysis_shows_population_unavailable_caption(
     mocked_population_registry,
 ):
-    """"Testland" matches nothing in the (mocked) World Bank registry --
+    """ "Testland" matches nothing in the (mocked) World Bank registry --
     must show the graceful 'not available' caption, never an error.
     """
     at = _configured_session_app(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/4_exploratory_analysis.py")
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
     at.run()
     assert at.exception == []
     captions = [c.value for c in at.caption]

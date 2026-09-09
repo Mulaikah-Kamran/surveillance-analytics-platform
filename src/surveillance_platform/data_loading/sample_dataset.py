@@ -31,7 +31,9 @@ ARCHIVE_MEMBER = "National_extract_V1_3.csv"
 # Same path M2's script writes to -- whichever runs first, the other
 # reuses the cached file rather than re-downloading (ADR-010's
 # Security section: dedupe repeated "Download sample dataset" clicks).
-OUTPUT_PATH = Path(__file__).parent.parent.parent.parent / "data" / "raw" / ARCHIVE_MEMBER
+OUTPUT_PATH = (
+    Path(__file__).parent.parent.parent.parent / "data" / "raw" / ARCHIVE_MEMBER
+)
 
 
 class ChecksumMismatchError(ValueError):
@@ -62,7 +64,10 @@ def get_sample_dataset() -> bytes:
         )
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(io.BytesIO(archive_bytes)) as zf, zf.open(ARCHIVE_MEMBER) as src:
+    with (
+        zipfile.ZipFile(io.BytesIO(archive_bytes)) as zf,
+        zf.open(ARCHIVE_MEMBER) as src,
+    ):
         csv_bytes = src.read()
     OUTPUT_PATH.write_bytes(csv_bytes)
     return csv_bytes

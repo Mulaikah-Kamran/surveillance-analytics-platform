@@ -40,8 +40,10 @@ col3.metric("Rows excluded", f"{report.rows_excluded:,}")
 if report.exclusion_reasons:
     st.subheader("Exclusion reasons")
     st.dataframe(
-        {"reason": list(report.exclusion_reasons.keys()),
-         "count": list(report.exclusion_reasons.values())}
+        {
+            "reason": list(report.exclusion_reasons.keys()),
+            "count": list(report.exclusion_reasons.values()),
+        }
     )
 
 st.subheader("Quality findings")
@@ -71,4 +73,6 @@ if report.warnings:
     for warning in report.warnings:
         st.warning(warning)
 
-st.success("Data preparation complete. Continue to **Exploratory Analysis** in the sidebar.")
+st.success(
+    "Data preparation complete. Continue to **Exploratory Analysis** in the sidebar."
+)

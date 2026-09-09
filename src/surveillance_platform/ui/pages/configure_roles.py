@@ -25,27 +25,40 @@ suggestions = suggest_roles(session.dataset)
 st.caption("Column types:")
 st.dataframe(session.dataset.dtypes.astype(str).rename("dtype"))
 
-st.markdown("Assign each required role to a column. Suggestions are a "
-            "convenience only -- nothing is pre-selected; you choose.")
+st.markdown(
+    "Assign each required role to a column. Suggestions are a "
+    "convenience only -- nothing is pre-selected; you choose."
+)
 
 col1, col2 = st.columns(2)
 with col1:
     time_col = st.selectbox(
-        "Time", columns, index=None, placeholder="-- select a column --", key="role_time"
+        "Time",
+        columns,
+        index=None,
+        placeholder="-- select a column --",
+        key="role_time",
     )
     if suggestions["time"]:
         st.caption(f"Suggested: `{suggestions['time']}`")
 
     location_col = st.selectbox(
-        "Location", columns, index=None, placeholder="-- select a column --", key="role_location"
+        "Location",
+        columns,
+        index=None,
+        placeholder="-- select a column --",
+        key="role_location",
     )
     if suggestions["location"]:
         st.caption(f"Suggested: `{suggestions['location']}`")
 
 with col2:
     measure_col = st.selectbox(
-        "Surveillance Measure", columns, index=None,
-        placeholder="-- select a column --", key="role_measure",
+        "Surveillance Measure",
+        columns,
+        index=None,
+        placeholder="-- select a column --",
+        key="role_measure",
     )
     if suggestions["surveillance_measure"]:
         st.caption(f"Suggested: `{suggestions['surveillance_measure']}`")
@@ -71,6 +84,10 @@ if time_col and location_col and measure_col:
         for message in session.error_messages:
             st.markdown(f"- {message}")
     else:
-        st.success("Role configuration is valid. Continue to **Data Preparation** in the sidebar.")
+        st.success(
+            "Role configuration is valid. Continue to **Data Preparation** in the sidebar."
+        )
 else:
-    st.info("Select all three required roles (Time, Location, Surveillance Measure) to continue.")
+    st.info(
+        "Select all three required roles (Time, Location, Surveillance Measure) to continue."
+    )

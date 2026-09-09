@@ -51,7 +51,8 @@ def test_lookup_excludes_aggregate_entries(tmp_path):
     cache_path = tmp_path / "registry.json"
     with (
         patch(
-            "surveillance_platform.data_loading.population_lookup._CACHE_PATH", cache_path
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            cache_path,
         ),
         patch(
             "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
@@ -67,7 +68,8 @@ def test_lookup_includes_real_countries_with_correct_iso3(tmp_path):
     cache_path = tmp_path / "registry.json"
     with (
         patch(
-            "surveillance_platform.data_loading.population_lookup._CACHE_PATH", cache_path
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            cache_path,
         ),
         patch(
             "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
@@ -83,17 +85,20 @@ def test_lookup_includes_real_countries_with_correct_iso3(tmp_path):
 
 def test_lookup_caches_to_disk_and_does_not_refetch(tmp_path):
     cache_path = tmp_path / "registry.json"
-    with patch(
-        "surveillance_platform.data_loading.population_lookup._CACHE_PATH", cache_path
-    ):
-        with patch(
+    with (
+        patch(
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            cache_path,
+        ),
+        patch(
             "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
             return_value=_FAKE_REGISTRY,
-        ) as mock_fetch:
-            get_country_iso3_lookup()
-            assert mock_fetch.call_count == 1
-            get_country_iso3_lookup()  # second call: should use disk cache
-            assert mock_fetch.call_count == 1
+        ) as mock_fetch,
+    ):
+        get_country_iso3_lookup()
+        assert mock_fetch.call_count == 1
+        get_country_iso3_lookup()  # second call: should use disk cache
+        assert mock_fetch.call_count == 1
     assert cache_path.exists()
 
 
@@ -123,7 +128,8 @@ def mocked_registry(tmp_path):
     cache_path = tmp_path / "registry.json"
     with (
         patch(
-            "surveillance_platform.data_loading.population_lookup._CACHE_PATH", cache_path
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            cache_path,
         ),
         patch(
             "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
@@ -144,9 +150,7 @@ def test_fetch_matches_all_four_real_study_countries(mocked_registry):
         "surveillance_platform.data_loading.population_lookup.urllib.request.urlopen",
         return_value=_mock_indicator_response(fake_records),
     ):
-        result = fetch_population_data(
-            ["BANGLADESH", "SRI LANKA", "MALDIVES", "NEPAL"]
-        )
+        result = fetch_population_data(["BANGLADESH", "SRI LANKA", "MALDIVES", "NEPAL"])
     assert set(result["country"]) == {"BANGLADESH", "SRI LANKA", "MALDIVES", "NEPAL"}
     assert len(result) == 4
 
@@ -159,7 +163,9 @@ def test_fetch_matches_mixed_case_location_values(mocked_registry):
     ):
         result = fetch_population_data(["bangladesh"])
     assert len(result) == 1
-    assert result.iloc[0]["country"] == "bangladesh"  # original casing, not "Bangladesh"
+    assert (
+        result.iloc[0]["country"] == "bangladesh"
+    )  # original casing, not "Bangladesh"
 
 
 def test_fetch_preserves_original_casing_exactly(mocked_registry):

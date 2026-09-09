@@ -15,7 +15,6 @@ import pytest
 from surveillance_platform.forecasting import detect_tracks
 from surveillance_platform.role_configuration import RoleConfiguration
 from surveillance_platform.workflow import (
-    AnalysisSession,
     configure_roles,
     create_session,
     run_eda,
@@ -72,6 +71,7 @@ def test_set_dataset_does_not_mutate_original_session():
     session = create_session()
     updated = set_dataset(session, _valid_dataset())
     assert session.dataset is None  # original untouched
+    assert updated.dataset is not None  # new session actually has it
 
 
 def test_configure_roles_requires_dataset_first():
@@ -90,8 +90,10 @@ def test_configure_roles_succeeds_with_valid_config():
 def test_configure_roles_fails_with_invalid_config():
     session = set_dataset(create_session(), _valid_dataset())
     bad_config = RoleConfiguration(
-        time="nonexistent_column", location="adm_0_name",
-        surveillance_measure="dengue_total", identifier=None,
+        time="nonexistent_column",
+        location="adm_0_name",
+        surveillance_measure="dengue_total",
+        identifier=None,
     )
     updated = configure_roles(session, bad_config)
     assert updated.status == "Failed"
@@ -105,7 +107,9 @@ def test_run_preparation_requires_configured_status():
 
 
 def test_run_preparation_succeeds_and_advances_to_running():
-    session = configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+    session = configure_roles(
+        set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG
+    )
     updated = run_preparation(session)
     assert updated.status == "Running"
     assert "preparation" in updated.results
@@ -120,7 +124,9 @@ def test_run_preparation_fails_on_structurally_invalid_data():
 
 
 def test_run_eda_requires_completed_preparation():
-    session = configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+    session = configure_roles(
+        set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG
+    )
     with pytest.raises(ValueError, match="requires a completed preparation stage"):
         run_eda(session)
 
@@ -145,7 +151,9 @@ def test_run_visualization_requires_completed_eda():
 def test_run_visualization_succeeds_after_eda():
     session = run_eda(
         run_preparation(
-            configure_roles(set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG)
+            configure_roles(
+                set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG
+            )
         )
     )
     updated = run_visualization(session)
@@ -214,7 +222,9 @@ def test_run_forecast_for_track_passes_through_progress_callbacks():
     population = pd.Series({y: 1_000_000 for y in range(2010, 2012)})
     candidates_seen = []
     run_forecast_for_track(
-        session, track, population_by_year=population,
+        session,
+        track,
+        population_by_year=population,
         on_candidate=lambda *a: candidates_seen.append(a),
     )
     assert len(candidates_seen) == 36  # 3x3x2x2 grid, regardless of eligibility
@@ -229,7 +239,9 @@ def test_run_forecast_for_track_accumulates_multiple_tracks_without_overwriting(
     data_b["adm_0_name"] = "Otherland"
     combined = pd.concat([data_a, data_b], ignore_index=True)
 
-    session = run_preparation(configure_roles(set_dataset(create_session(), combined), ROLE_CONFIG))
+    session = run_preparation(
+        configure_roles(set_dataset(create_session(), combined), ROLE_CONFIG)
+    )
     tracks = detect_tracks(session.results["preparation"].data, ROLE_CONFIG)
     assert len(tracks) == 2
 

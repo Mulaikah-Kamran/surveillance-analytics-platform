@@ -11,7 +11,9 @@ from streamlit.testing.v1 import AppTest
 REPO_ROOT = Path(__file__).parent.parent
 APP_PATH = str(REPO_ROOT / "app.py")
 
-VALID_CSV_HEADER = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+VALID_CSV_HEADER = (
+    "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+)
 VALID_CSV_ROWS = "".join(
     f"Testland,2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n" for m in range(1, 13)
 )
@@ -38,21 +40,21 @@ def mocked_population_registry(tmp_path):
 def _app_through_visualization(csv_bytes: bytes) -> AppTest:
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/1_load_dataset.py")
+    at.switch_page("src/surveillance_platform/ui/pages/load_dataset.py")
     at.run()
     at.get("file_uploader")[0].upload("test.csv", csv_bytes, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
     at.selectbox(key="role_time").select("calendar_start_date")
     at.selectbox(key="role_location").select("adm_0_name")
     at.selectbox(key="role_measure").select("dengue_total")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/4_exploratory_analysis.py")
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
     at.run()
     return at
 
@@ -60,7 +62,7 @@ def _app_through_visualization(csv_bytes: bytes) -> AppTest:
 def test_visualization_without_eda_shows_warning():
     at = AppTest.from_file(APP_PATH)
     at.run()
-    at.switch_page("src/surveillance_platform/ui/pages/5_visualization.py")
+    at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
     at.run()
     assert at.exception == []
     assert len(at.warning) > 0
@@ -68,7 +70,7 @@ def test_visualization_without_eda_shows_warning():
 
 def test_visualization_succeeds_after_eda(mocked_population_registry):
     at = _app_through_visualization(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/5_visualization.py")
+    at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
     at.run()
     assert at.exception == []
     session = at.session_state["analysis_session"]
@@ -84,7 +86,7 @@ def test_visualization_shows_unavailable_captions_when_optional_figures_absent(
     shown via captions, never an error.
     """
     at = _app_through_visualization(VALID_CSV)
-    at.switch_page("src/surveillance_platform/ui/pages/5_visualization.py")
+    at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
     at.run()
     assert at.exception == []
     captions = [c.value for c in at.caption]

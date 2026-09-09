@@ -38,7 +38,7 @@ def _at_on_page(page_name: str) -> AppTest:
 
 
 def test_uploading_a_valid_csv_populates_the_session():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     at.get("file_uploader")[0].upload("test.csv", VALID_CSV, "text/csv")
     at.run()
     assert at.exception == []
@@ -48,7 +48,7 @@ def test_uploading_a_valid_csv_populates_the_session():
 
 
 def test_uploading_sub_national_data_shows_a_warning_not_a_block():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     at.get("file_uploader")[0].upload("test.csv", SUB_NATIONAL_CSV, "text/csv")
     at.run()
     assert at.exception == []
@@ -59,13 +59,13 @@ def test_uploading_sub_national_data_shows_a_warning_not_a_block():
 
 
 def test_no_upload_yet_shows_no_dataset():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     session = at.session_state["analysis_session"]
     assert session.dataset is None
 
 
 def test_sample_download_button_is_present():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     assert len(at.get("download_button")) == 1
 
 
@@ -73,17 +73,17 @@ def test_sample_download_button_is_present():
 
 
 def test_configure_roles_without_dataset_shows_warning_and_stops():
-    at = _at_on_page("2_configure_roles.py")
+    at = _at_on_page("configure_roles.py")
     assert at.exception == []
     assert len(at.warning) > 0
 
 
 def test_selecting_valid_roles_shows_success():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     at.get("file_uploader")[0].upload("test.csv", VALID_CSV, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
 
     at.selectbox(key="role_time").select("calendar_start_date")
@@ -99,11 +99,11 @@ def test_selecting_valid_roles_shows_success():
 
 
 def test_selecting_the_same_column_for_two_roles_shows_error():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     at.get("file_uploader")[0].upload("test.csv", VALID_CSV, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
 
     at.selectbox(key="role_time").select("dengue_total")
@@ -118,11 +118,11 @@ def test_selecting_the_same_column_for_two_roles_shows_error():
 
 
 def test_highlighting_suggestion_is_shown_but_not_preselected():
-    at = _at_on_page("1_load_dataset.py")
+    at = _at_on_page("load_dataset.py")
     at.get("file_uploader")[0].upload("test.csv", VALID_CSV, "text/csv")
     at.run()
 
-    at.switch_page("src/surveillance_platform/ui/pages/2_configure_roles.py")
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
     at.run()
 
     # A suggestion caption should be shown for at least Time/Location...

@@ -14,7 +14,7 @@ the "never mutates" convention M4-M7 already established.
 from __future__ import annotations
 
 import dataclasses
-from typing import Callable
+from collections.abc import Callable
 
 import pandas as pd
 
@@ -58,7 +58,9 @@ def configure_roles(
     try:
         validate(role_config, session.dataset.columns)
     except RoleConfigurationError as exc:
-        return dataclasses.replace(session, status="Failed", error_messages=exc.violations)
+        return dataclasses.replace(
+            session, status="Failed", error_messages=exc.violations
+        )
     return dataclasses.replace(session, role_config=role_config, status="Configured")
 
 
@@ -79,7 +81,9 @@ def run_preparation(session: AnalysisSession) -> AnalysisSession:
     try:
         result = prepare(session.dataset, session.role_config)
     except DataPreparationError as exc:
-        return dataclasses.replace(session, status="Failed", error_messages=exc.violations)
+        return dataclasses.replace(
+            session, status="Failed", error_messages=exc.violations
+        )
     results = {**session.results, "preparation": result}
     return dataclasses.replace(session, status="Running", results=results)
 
@@ -131,7 +135,9 @@ def run_forecasting(
     if "preparation" not in session.results:
         raise ValueError("run_forecasting() requires a completed preparation stage.")
     prepared_data = session.results["preparation"].data
-    forecast_results = forecast(prepared_data, session.role_config, population_by_country)
+    forecast_results = forecast(
+        prepared_data, session.role_config, population_by_country
+    )
     results = {**session.results, "forecast": forecast_results}
     return dataclasses.replace(session, status="Completed", results=results)
 
@@ -140,8 +146,12 @@ def run_forecast_for_track(
     session: AnalysisSession,
     track: Track,
     population_by_year: pd.Series | None,
-    on_candidate: Callable[[tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None]
-    | None = None,
+    on_candidate: (
+        Callable[
+            [tuple[int, int, int], tuple[int, int, int, int], float | None, bool], None
+        ]
+        | None
+    ) = None,
     on_origin: Callable[[int, int], None] | None = None,
 ) -> AnalysisSession:
     """Run forecast_track() for exactly one selected track (ADR-010).
@@ -162,7 +172,9 @@ def run_forecast_for_track(
     ordinary data limitation (forecast_track() itself never does).
     """
     if "preparation" not in session.results:
-        raise ValueError("run_forecast_for_track() requires a completed preparation stage.")
+        raise ValueError(
+            "run_forecast_for_track() requires a completed preparation stage."
+        )
     prepared_data = session.results["preparation"].data
     result = forecast_track(
         prepared_data,

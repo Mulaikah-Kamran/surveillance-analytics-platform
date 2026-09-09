@@ -34,7 +34,10 @@ POPULATION_INDICATOR_URL_TEMPLATE = (
 # sample_dataset.py's OUTPUT_PATH -- a cache artifact, not code, so
 # this does not touch M2's frozen acquisition scripts.
 _CACHE_PATH = (
-    Path(__file__).parent.parent.parent.parent / "data" / "raw" / "wb_country_registry.json"
+    Path(__file__).parent.parent.parent.parent
+    / "data"
+    / "raw"
+    / "wb_country_registry.json"
 )
 
 
@@ -81,7 +84,9 @@ def fetch_population_data(location_values: list[str]) -> pd.DataFrame:
     """
     lookup = get_country_iso3_lookup()
     matched = {
-        value: lookup[value.upper()] for value in location_values if value.upper() in lookup
+        value: lookup[value.upper()]
+        for value in location_values
+        if value.upper() in lookup
     }
     if not matched:
         return pd.DataFrame(columns=["country", "year", "population"])
@@ -105,7 +110,11 @@ def fetch_population_data(location_values: list[str]) -> pd.DataFrame:
         if original is None:
             continue
         records.append(
-            {"country": original, "year": int(entry["date"]), "population": int(entry["value"])}
+            {
+                "country": original,
+                "year": int(entry["date"]),
+                "population": int(entry["value"]),
+            }
         )
     return pd.DataFrame(records, columns=["country", "year", "population"])
 

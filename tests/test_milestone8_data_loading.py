@@ -21,7 +21,6 @@ from surveillance_platform.data_loading.sample_dataset import (
 )
 from surveillance_platform.data_loading.sanity_check import check_spatial_resolution
 
-
 # --- load_csv ---------------------------------------------------------
 
 
@@ -89,14 +88,16 @@ def test_get_sample_dataset_uses_cache_when_present(tmp_path):
     cached_file = tmp_path / "National_extract_V1_3.csv"
     cached_file.write_bytes(b"cached,content\n1,2\n")
 
-    with patch(
-        "surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", cached_file
-    ):
-        with patch(
+    with (
+        patch(
+            "surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", cached_file
+        ),
+        patch(
             "surveillance_platform.data_loading.sample_dataset.urllib.request.urlopen"
-        ) as mock_urlopen:
-            result = get_sample_dataset()
-            mock_urlopen.assert_not_called()
+        ) as mock_urlopen,
+    ):
+        result = get_sample_dataset()
+        mock_urlopen.assert_not_called()
     assert result == b"cached,content\n1,2\n"
 
 
@@ -118,7 +119,9 @@ def test_get_sample_dataset_downloads_and_verifies_when_absent(tmp_path):
     mock_response.__exit__ = lambda self, *a: None
 
     with (
-        patch("surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", target_path),
+        patch(
+            "surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", target_path
+        ),
         patch(
             "surveillance_platform.data_loading.sample_dataset.EXPECTED_ARCHIVE_SHA256",
             real_digest,
@@ -143,7 +146,9 @@ def test_get_sample_dataset_raises_on_checksum_mismatch(tmp_path):
     mock_response.__exit__ = lambda self, *a: None
 
     with (
-        patch("surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", target_path),
+        patch(
+            "surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", target_path
+        ),
         patch(
             "surveillance_platform.data_loading.sample_dataset.EXPECTED_ARCHIVE_SHA256",
             "0" * 64,
@@ -152,7 +157,7 @@ def test_get_sample_dataset_raises_on_checksum_mismatch(tmp_path):
             "surveillance_platform.data_loading.sample_dataset.urllib.request.urlopen",
             return_value=mock_response,
         ),
+        pytest.raises(ChecksumMismatchError),
     ):
-        with pytest.raises(ChecksumMismatchError):
-            get_sample_dataset()
+        get_sample_dataset()
     assert not target_path.exists()  # never cached a bad download

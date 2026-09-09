@@ -18,13 +18,13 @@ st.set_page_config(page_title="Epicurve", layout="wide")
 
 pg = st.navigation(
     [
-        st.Page(f"{PAGES_DIR}/1_load_dataset.py", title="Load Dataset"),
-        st.Page(f"{PAGES_DIR}/2_configure_roles.py", title="Configure Roles"),
-        st.Page(f"{PAGES_DIR}/3_data_preparation.py", title="Data Preparation"),
-        st.Page(f"{PAGES_DIR}/4_exploratory_analysis.py", title="Exploratory Analysis"),
-        st.Page(f"{PAGES_DIR}/5_visualization.py", title="Visualization"),
-        st.Page(f"{PAGES_DIR}/6_forecasting.py", title="Forecasting"),
-        st.Page(f"{PAGES_DIR}/7_results_export.py", title="Results & Export"),
+        st.Page(f"{PAGES_DIR}/load_dataset.py", title="Load Dataset"),
+        st.Page(f"{PAGES_DIR}/configure_roles.py", title="Configure Roles"),
+        st.Page(f"{PAGES_DIR}/data_preparation.py", title="Data Preparation"),
+        st.Page(f"{PAGES_DIR}/exploratory_analysis.py", title="Exploratory Analysis"),
+        st.Page(f"{PAGES_DIR}/visualization.py", title="Visualization"),
+        st.Page(f"{PAGES_DIR}/forecasting.py", title="Forecasting"),
+        st.Page(f"{PAGES_DIR}/results_export.py", title="Results & Export"),
     ]
 )
 

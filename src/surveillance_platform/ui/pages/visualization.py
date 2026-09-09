@@ -38,15 +38,21 @@ with st.container(border=True):
 if viz.population_normalized_distribution is not None:
     with st.container(border=True):
         st.subheader("Population-normalized distribution")
-        st.plotly_chart(viz.population_normalized_distribution, use_container_width=True)
+        st.plotly_chart(
+            viz.population_normalized_distribution, use_container_width=True
+        )
 else:
-    st.caption("Population-normalized distribution not available (no matching population data).")
+    st.caption(
+        "Population-normalized distribution not available (no matching population data)."
+    )
 
 if viz.surveillance_profile is not None:
     with st.container(border=True):
         st.subheader("Surveillance resolution profile")
         st.plotly_chart(viz.surveillance_profile, use_container_width=True)
 else:
-    st.caption("Surveillance resolution profile not available (T_res/case_definition_standardised absent).")
+    st.caption(
+        "Surveillance resolution profile not available (T_res/case_definition_standardised absent)."
+    )
 
 st.success("Visualization complete. Continue to **Forecasting** in the sidebar.")
