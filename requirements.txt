@@ -20,6 +20,15 @@ ruff==0.16.1
 # tabular data structures, per Section 26 Principle 4 and Section 29.
 pandas==3.0.5
 
+# numpy is pandas' core dependency and is also imported directly in
+# M7 (surveillance_platform.forecasting.model). Previously unpinned
+# (installed transitively) — pinned now because Antigravity's
+# post-merge M8 review reproduced Bangladesh's Confirmed-track MASE
+# as 1.4316, not the documented 1.4257: still the same qualitative
+# finding (SARIMA loses to the baseline), but not byte-identical,
+# which this project treats as worth closing, not waving away.
+numpy==2.4.4
+
 # Milestone 6 (Visualization) — first milestone requiring interactive
 # analytical visualization, per Section 26 (Dependency Table, Section
 # 29 Implementation Roadmap: Plotly is the locked visualization library).
@@ -31,6 +40,12 @@ plotly==6.9.0
 # introduced here per Principle 4, with SARIMA's specific justification
 # recorded in ADR-009. Verified compatible with pandas==3.0.5/Python 3.12.
 statsmodels==0.15.0
+
+# scipy is statsmodels' numerical optimizer backbone (SARIMAX.fit()
+# calls into scipy.optimize) -- the most likely source of the MASE
+# discrepancy above, since it directly affects the MLE optimization
+# path. Previously unpinned for the same reason as numpy above.
+scipy==1.17.1
 
 # Milestone 8 (UI Integration) — Streamlit is the locked presentation
 # layer (ADR-006, Section 26 dependency table). Introduced now, at the
