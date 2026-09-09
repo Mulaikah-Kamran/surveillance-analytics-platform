@@ -44,3 +44,4 @@ data/*
 !data/README.md
 !data/download_national_extract.py
 !data/download_population_reference.py
+!data/download_nndss_validation_dataset.py
