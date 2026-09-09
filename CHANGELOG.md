@@ -135,6 +135,69 @@ detection needed month-level, not year-level, case-definition
 precision; a non-converged SARIMA fit warns rather than raises and
 must be explicitly excluded from the AIC comparison).
 
+### Added — Milestone 8: UI Integration
+
+- `data_loading/`, `workflow/`, `ui/`, `app.py`: the Epicurve
+  Streamlit application, per ADR-010. `data_loading` (CSV ingestion,
+  the `S_res` sanity check, checksum-verified sample-dataset download,
+  World Bank population registry matching) and `workflow`
+  (`AnalysisSession` and its controller functions, implementing PFD
+  Section 19's lifecycle) are both fully Streamlit-free and
+  independently testable — deleting `ui/` leaves the entire pipeline
+  runnable from a script. Replaces the M1 placeholders for both
+  modules.
+- Seven pages (`ui/pages/`), each mapped to an existing backend result
+  object: Load Dataset, Configure Roles, Data Preparation, Exploratory
+  Analysis, Visualization, Forecasting, and Results & Export. `st.
+  cache_data` wraps `workflow`/`data_loading` calls only at the `ui/`
+  boundary (`cached_pipeline.py`), keeping both wrapped modules
+  Streamlit-free.
+- Forecasting (Page 6) computes one selected track at a time via a new
+  `workflow.run_forecast_for_track()`, not the batch `forecast()` —
+  needed so a live progress panel (real AIC-grid and rolling-origin
+  progress, not simulated) can attach to exactly one track
+  unambiguously. Required a small, purely-additive ADR-009 revision
+  (`on_candidate`/`on_origin` callbacks on `select_sarima_order()`,
+  `rolling_origin_backtest()`, and `forecast_track()`, all default
+  `None`, verified byte-identical behavior with and without them).
+  This is also where ADR-009's deferred Confirmed/Total
+  case-definition selector and below-threshold-track warning land.
+- `data_loading/population_lookup.py`: population data sourcing for
+  EDA/Forecasting (never decided in the original ADR-010 design),
+  resolved as deterministic exact matching against the World Bank's
+  own country registry — never fuzzy, never hardcoded to the four
+  ADR-008 countries.
+- `ui/report_builder.py`: a self-contained, visually designed HTML
+  export (real CSS applying the project's locked palette/typography,
+  embedded interactive Plotly charts, no new dependency) — Streamlit-
+  free and independently testable, served via Page 7.
+- Security (ADR-010 addendum, added before implementation): HTML-
+  export XSS mitigation via `html.escape()` on every user-derived
+  string, in-memory-only uploaded-file handling, upload size limits
+  enforced at two layers, sample-dataset download deduplication.
+- CI compliance fix: `ruff`/`black` (already required by the existing
+  CI workflow, Section 27) were only ever checked via `pytest` locally
+  throughout M7/M8's development, leading to a real, silent CI
+  failure on `main`. Fixed with zero behavioral change, confirmed by
+  an identical passing-test-count before and after every fix.
+- `docs/adr/ADR-010-ui-integration-strategy.md` (plus population-
+  sourcing and forecast-progress addenda) and `docs/ui.md`.
+- 99 new tests across `data_loading`, `workflow`, `report_builder.py`,
+  and all seven pages (via `streamlit.testing.v1.AppTest`, simulating
+  real file uploads and dropdown selections, not just "loads without
+  exception"). Full suite: 253 passed, 0 failed, including a
+  fresh-install reproducibility run from `requirements.txt` alone.
+
+Several real gaps were caught and fixed during implementation rather
+than assumed away: `st.cache_data` cannot cleanly cache a call
+carrying a live UI-bound progress callback (resolved via the
+session's own results dict as manual memoization); a report missing
+its shared Plotly library script entirely (every chart would have
+rendered as an empty div); `AppTest.switch_page()` requiring
+file-based pages, not inline functions; and Streamlit's `N999`
+module-naming rule, which led to renaming all seven page files rather
+than suppressing a real naming-convention violation for no benefit.
+
 ## [0.1.0] — Milestone 1: Project Foundation
 
 ### Added
