@@ -13,6 +13,13 @@ should be able to see *why* a decision was made, not just what it was.
   formally locked as [ADR-008](../adr/ADR-008-study-country-selection.md)
   (the roadmap calls for this specific decision to be an ADR; most other
   Milestone 2 decisions are recorded here instead, without their own ADR).
+- [`2026-09-09_m9_dataset_evaluation.md`](2026-09-09_m9_dataset_evaluation.md) —
+  in-progress evaluation of Milestone 9's validation-dataset candidates
+  against PFD Section 12's four criteria, following the same
+  accessibility-verification precedent the Risk Register's R-001
+  already established for PAHO PLISA. Project Tycho rejected on
+  accessibility grounds (seven independent access failures across
+  unrelated networks and methods); HDX evaluation in progress.
 
 ## Decision Logs vs. ADRs
 
