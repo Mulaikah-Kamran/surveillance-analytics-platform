@@ -198,6 +198,60 @@ file-based pages, not inline functions; and Streamlit's `N999`
 module-naming rule, which led to renaming all seven page files rather
 than suppressing a real naming-convention violation for no benefit.
 
+### Added — Milestone 9: Architecture Validation
+
+- `data/download_nndss_validation_dataset.py`: acquisition script for
+  the Milestone 9 validation dataset, per
+  [ADR-011](adr/ADR-011-m9-validation-dataset-selection.md) —
+  CDC NNDSS weekly notifiable-disease data (2022–2026), pulled live
+  from CDC's public Socrata API (no key or login required). Mirrors
+  `download_national_extract.py`'s own acquisition/cleaning boundary:
+  the minimum structural transformation needed to produce a loadable
+  file (combining `year`+`week` into one date column, filtering and
+  case-normalizing location to the 50 states + DC), not a cleaning
+  script.
+- **Zero changes to `src/surveillance_platform/`.** The entire M3–M7
+  pipeline (role configuration, data preparation, EDA, visualization,
+  forecasting) ran against this real, structurally different dataset
+  completely unmodified, directly answering the Evaluation Question
+  (PFD Section 7): the architecture transfers with minimal
+  (acquisition-only) adaptation while maintaining full analytical
+  reproducibility.
+- `docs/m9-dataset-compatibility-report.md`: full 14-point
+  pre-implementation analysis (schema, role mapping, adaptation
+  classification, proceed/reject recommendation), grounded in real
+  pulled data, not documentation alone.
+- `docs/m9-architecture-validation-summary.md`: the post-implementation
+  workflow trace and final answer to the Evaluation Question.
+- `docs/adr/ADR-011-m9-validation-dataset-selection.md` (plus its
+  supporting decision log,
+  `docs/decision_logs/2026-09-09_m9_dataset_evaluation.md`): the full
+  validation-dataset evaluation trail. Project Tycho evaluated and
+  rejected on accessibility (seven independent access failures across
+  unrelated networks and methods); HDX's disease-outbreaks dataset
+  initially accepted, then corrected to rejected once the primary
+  source revealed no genuine numeric measure exists at all; WHO GHO
+  checked as a comparison and found to share HDX's annual-only
+  limitation; CDC NNDSS accepted after being the only candidate
+  confirmed on both accessibility and structure with real requests.
+- 10 new tests: 6 fast, deterministic unit tests for the acquisition
+  script's transformation logic (its MMWR-week arithmetic verified
+  against a real, independently-sourced CDC reference date, not just
+  internal consistency), 4 full-pipeline regression tests against the
+  real acquired file, skipping gracefully when absent (mirroring M2's
+  own established pattern for the never-committed raw dataset) rather
+  than failing in CI. Full suite: 263 passed, 0 failed, including a
+  fresh-install reproducibility run from `requirements.txt` alone,
+  checked both with and without the validation dataset present.
+
+One real implementation bug caught and fixed during acquisition: CDC's
+`week` column is MMWR epidemiological week numbering, not strict ISO
+8601 (they disagree on which years get a 53rd week) — caught when
+`pandas`' ISO-week parser raised on 2025's real week 53. Fixed with a
+direct, dependency-free MMWR calculation, verified against a real
+reference date before being trusted, consistent with the project's
+"does the standard library already solve this?" dependency principle.
+
 ## [0.1.0] — Milestone 1: Project Foundation
 
 ### Added
