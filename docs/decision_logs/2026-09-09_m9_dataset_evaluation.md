@@ -1,11 +1,13 @@
 # Decision Log — Milestone 9 Validation Dataset Evaluation
 
 **Date started:** 2026-09-09
-**Status:** In progress — candidates are evaluated and recorded here as
-they're assessed; the final selection will be locked as its own ADR
-once a candidate passes evaluation (per the ADR Creation Rule: this is
-a decision with multiple reasonable alternatives, hard to reverse once
-Milestone 9 implementation begins against it).
+**Status:** Decided — HDX's "global dataset of pandemic- and
+epidemic-prone disease outbreaks" accepted as the Milestone 9
+validation dataset. This log remains the supporting evidence; a
+formal ADR locking this choice follows once the M9 Dataset
+Compatibility Report (next step) confirms the structure empirically
+against real acquired data, mirroring how ADR-008 formalized the
+country-selection decision log.
 **Scope:** Selects the "one additional surveillance dataset" the
 Evaluation Question (PFD Section 7) and Milestone 9 (Section 29)
 require, against the four criteria in PFD Section 12: public
@@ -105,6 +107,61 @@ be revisited, but it is not being pursued further now.
 
 ---
 
-## Candidate 2: HDX-hosted datasets — evaluation in progress
+## Candidate 2: HDX — "A global dataset of pandemic- and epidemic-prone disease outbreaks"
 
-(To be completed next.)
+### Accessibility
+
+Confirmed genuinely open: HDX (data.humdata.org, run by UN OCHA's
+Centre for Humanitarian Data) requires no registration for public
+datasets — direct download button, and a public, unauthenticated API
+(`package_show`/`package_search`) for programmatic access. This is
+the opposite experience from Tycho: no access attempt has failed.
+
+### Structure
+
+Sourced from WHO's Disease Outbreak News and Coronavirus Dashboard;
+published as a peer-reviewed data paper (Torres Munguía et al.,
+*Scientific Data*, 2022, DOI `10.1038/s41597-022-01797-2`). Covers
+2,227 outbreak records across 70 diseases and 233 countries/
+territories, January 1996 – March 2022.
+
+**Confirmed directly from the authors' own dataset description**: the
+unit of analysis is one row per (country, disease, **year**) — "a
+specific country cannot have two outbreaks related to the same
+disease in the same year." This is annual-only, with no sub-annual
+granularity anywhere in the source. It is also genuinely sparse
+(~50 outbreak-year records per year, spread across 233 countries and
+70 diseases) rather than a dense panel where every location reports
+every period, unlike OpenDengue.
+
+### Honest assessment against M9's actual purpose
+
+This structure would very likely satisfy Load/Configure Roles/
+Validation/Data Preparation/EDA/Visualization without difficulty —
+but for Forecasting specifically, it would almost certainly produce
+**zero eligible tracks across the entire dataset**, not a
+country-specific limitation like Nepal's in the real OpenDengue data,
+but structurally, everywhere: ADR-009's eligibility floor requires
+≥72 months of *continuous sub-annual* data, and this source has
+neither sub-annual resolution nor continuous multi-year runs for most
+country-disease pairs at all.
+
+This is still a legitimate M9 finding — confirming the architecture
+correctly recognizes when forecasting doesn't apply, rather than
+breaking, is itself informative — but it is a materially weaker test
+of "does the forecasting stage generalize" than Tycho's continuous
+weekly series would have been, which would have produced real,
+computed SARIMA results on a genuinely different dataset. This
+trade-off (accessibility vs. exercising the full pipeline) was
+weighed explicitly, not defaulted into by picking whichever candidate
+happened to be reachable.
+
+### Verdict: ACCEPTED, with the forecasting limitation documented as an
+expected finding, not a gap
+
+Proceeding with this dataset. The M9 Dataset Compatibility Report
+(next step, before any implementation) will assess the exact
+structure against our role contract in full, including confirming
+this forecasting-eligibility expectation empirically once the real
+file is acquired, rather than resting on the paper's description
+alone.

@@ -14,12 +14,14 @@ should be able to see *why* a decision was made, not just what it was.
   (the roadmap calls for this specific decision to be an ADR; most other
   Milestone 2 decisions are recorded here instead, without their own ADR).
 - [`2026-09-09_m9_dataset_evaluation.md`](2026-09-09_m9_dataset_evaluation.md) —
-  in-progress evaluation of Milestone 9's validation-dataset candidates
-  against PFD Section 12's four criteria, following the same
-  accessibility-verification precedent the Risk Register's R-001
-  already established for PAHO PLISA. Project Tycho rejected on
-  accessibility grounds (seven independent access failures across
-  unrelated networks and methods); HDX evaluation in progress.
+  Milestone 9 validation-dataset evaluation against PFD Section 12's
+  four criteria, following the same accessibility-verification
+  precedent the Risk Register's R-001 already established for PAHO
+  PLISA. Project Tycho rejected on accessibility grounds (seven
+  independent access failures); HDX's global disease-outbreaks
+  dataset accepted, with its annual-only, sparse structure's expected
+  effect on forecasting eligibility weighed explicitly rather than
+  overlooked.
 
 ## Decision Logs vs. ADRs
 
