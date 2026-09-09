@@ -1,15 +1,18 @@
 """Exploratory Analysis page (Milestone 8, ADR-010).
 
-Runs M5's analyze(). Population data is not yet wired in (open
-question, flagged separately) -- population_normalized will
-correctly show as unavailable via EDAResult's own "absent, not an
-error" contract, not as an error.
+Runs M5's analyze(), with population data from the World Bank
+registry lookup (ADR-010 addendum) -- matched deterministically
+against whichever Location values are actually present in the
+dataset. A location that doesn't match is simply absent from the
+result; population_normalized then shows as unavailable via
+EDAResult's own "absent, not an error" contract for exactly those
+countries, not as an error for the whole page.
 """
 
 import streamlit as st
 
-from surveillance_platform import workflow
-from surveillance_platform.ui.cached_pipeline import cached_run_eda
+from surveillance_platform import data_loading, workflow
+from surveillance_platform.ui.cached_pipeline import cached_fetch_population_data, cached_run_eda
 
 st.title("Exploratory Analysis")
 
@@ -19,7 +22,11 @@ if "preparation" not in session.results or session.status == "Failed":
     st.warning("Complete **Data Preparation** first.")
     st.stop()
 
-session = cached_run_eda(session)
+prepared_data = session.results["preparation"].data
+distinct_locations = sorted(prepared_data[session.role_config.location].unique().tolist())
+population_data = cached_fetch_population_data(distinct_locations)
+
+session = cached_run_eda(session, population_data)
 st.session_state["analysis_session"] = session
 eda = session.results["eda"]
 
@@ -76,7 +83,7 @@ for entry in eda.country_comparison.countries:
         )
         st.caption(f"{entry.first_date} to {entry.last_date}")
 
-if eda.population_normalized is not None:
+if eda.population_normalized is not None and eda.population_normalized.rates:
     st.subheader("Population-normalized rate (per 100,000)")
     st.dataframe(
         {
@@ -88,6 +95,9 @@ if eda.population_normalized is not None:
         }
     )
 else:
-    st.caption("Population-normalized rates not available (no population data supplied).")
+    st.caption(
+        "Population-normalized rates not available (none of this dataset's "
+        "locations matched the World Bank country registry)."
+    )
 
 st.success("Exploratory analysis complete. Continue to **Visualization** in the sidebar.")

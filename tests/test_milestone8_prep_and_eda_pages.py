@@ -3,11 +3,39 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 REPO_ROOT = Path(__file__).parent.parent
 APP_PATH = str(REPO_ROOT / "app.py")
+
+# "Testland" is fictional and will never match the World Bank
+# registry -- but the *lookup itself* still needs to check the
+# registry first, so every test that reaches the Exploratory Analysis
+# page must mock the registry fetch (see mocked_population_registry
+# below). Without this, a fresh environment/CI with no pre-existing
+# disk cache would make a real, uncontrolled network call during
+# testing -- caught during Batch 5 development, not assumed away.
+
+
+@pytest.fixture
+def mocked_population_registry(tmp_path):
+    with (
+        patch(
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            tmp_path / "registry.json",
+        ),
+        patch(
+            "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
+            return_value=[
+                {"id": "BGD", "name": "Bangladesh", "region": {"value": "South Asia"}},
+            ],
+        ),
+    ):
+        yield
+
 
 # 20 months, well-formed -- enough for a meaningful preparation/EDA run
 # without being large enough to slow the test suite down.
@@ -94,7 +122,7 @@ def test_exploratory_analysis_without_preparation_shows_warning():
     assert len(at.warning) > 0
 
 
-def test_exploratory_analysis_succeeds_after_preparation():
+def test_exploratory_analysis_succeeds_after_preparation(mocked_population_registry):
     at = _configured_session_app(VALID_CSV)
     at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
     at.run()
@@ -106,9 +134,11 @@ def test_exploratory_analysis_succeeds_after_preparation():
     assert len(at.success) > 0
 
 
-def test_exploratory_analysis_shows_population_unavailable_caption():
-    """No population data is wired in yet (open question) -- must show
-    the graceful 'not available' caption, never an error.
+def test_exploratory_analysis_shows_population_unavailable_caption(
+    mocked_population_registry,
+):
+    """"Testland" matches nothing in the (mocked) World Bank registry --
+    must show the graceful 'not available' caption, never an error.
     """
     at = _configured_session_app(VALID_CSV)
     at.switch_page("src/surveillance_platform/ui/pages/3_data_preparation.py")
