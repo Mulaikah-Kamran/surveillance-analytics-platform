@@ -4,12 +4,20 @@ Single ingestion path (ADR-010): st.file_uploader is the only way
 data enters the pipeline, used both for a user's own file and for the
 "Download sample dataset" convenience (which still requires the same
 explicit upload step afterward).
+
+Starter dataset scoped to four countries (2026-09-10): the full
+National Extract covers 129 countries, which is a lot for a first
+download -- offering the four countries this project was actually
+built and evaluated around (ADR-008) instead, with a separate link to
+OpenDengue's own data explorer for anyone who wants a different
+country or date range. Uploading a dataset from any other source was
+always supported and still is.
 """
 
 import streamlit as st
 
 from surveillance_platform import data_loading, workflow
-from surveillance_platform.ui.cached_pipeline import cached_get_sample_dataset
+from surveillance_platform.ui.cached_pipeline import cached_get_starter_sample_dataset
 
 st.title("Load Dataset")
 
@@ -23,18 +31,27 @@ if session.dataset is None:
     )
 
 st.markdown(
-    "Upload a surveillance dataset (CSV). If you don't have one handy, "
-    "download the real, checksum-verified sample dataset below, then "
-    "upload it the same way as any other file."
+    "Upload a surveillance dataset (CSV) from any source. If you don't have "
+    "one handy, start with the sample below (Sri Lanka, Bangladesh, Maldives, "
+    "and Nepal, the four countries this project was built around), or get a "
+    "different country or date range directly from OpenDengue. Either way, "
+    "upload the CSV the same way as any other file."
 )
 
-sample_bytes = cached_get_sample_dataset()
-st.download_button(
-    "Download sample dataset (OpenDengue National Extract)",
-    data=sample_bytes,
-    file_name="National_extract_V1_3.csv",
-    mime="text/csv",
-)
+col1, col2 = st.columns(2)
+with col1:
+    sample_bytes = cached_get_starter_sample_dataset()
+    st.download_button(
+        "Download sample dataset (4 countries)",
+        data=sample_bytes,
+        file_name="opendengue_starter_sample.csv",
+        mime="text/csv",
+    )
+with col2:
+    st.link_button(
+        "Get other countries from OpenDengue",
+        "https://opendengue.org/data.html",
+    )
 
 uploaded_file = st.file_uploader(
     "Upload your surveillance dataset (CSV)",

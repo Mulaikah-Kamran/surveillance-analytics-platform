@@ -12,6 +12,7 @@ sync with the same pinned release.
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import io
 import urllib.request
@@ -71,3 +72,33 @@ def get_sample_dataset() -> bytes:
         csv_bytes = src.read()
     OUTPUT_PATH.write_bytes(csv_bytes)
     return csv_bytes
+
+
+# The four countries this project was actually built and evaluated
+# around (ADR-008). A first-time user downloading "the sample dataset"
+# and landing on 129 countries they don't recognize is a worse first
+# impression than a small, focused starter file -- so the download
+# button offers this subset by default, with a separate link to
+# OpenDengue's own site for anyone who wants a different country.
+STARTER_COUNTRIES = ("SRI LANKA", "BANGLADESH", "MALDIVES", "NEPAL")
+
+
+def get_starter_sample_dataset() -> bytes:
+    """Return just the four ADR-008 study countries, as CSV bytes.
+
+    Reuses get_sample_dataset()'s full download/cache/verify logic
+    unchanged (other tooling, e.g. the M2 acquisition tests, expects
+    the shared cache file at OUTPUT_PATH to stay the complete,
+    unfiltered National Extract) -- this only filters the bytes
+    returned here, in memory, never touching that cached file.
+    """
+    full_csv = get_sample_dataset()
+    reader = csv.DictReader(io.StringIO(full_csv.decode("utf-8")))
+    fieldnames = reader.fieldnames
+    rows = [row for row in reader if row["adm_0_name"] in STARTER_COUNTRIES]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+    return output.getvalue().encode("utf-8")

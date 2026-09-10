@@ -24,7 +24,7 @@ suggestions = suggest_roles(session.dataset)
 
 st.markdown(
     "Assign each required role to a column. Suggestions are a "
-    "convenience only -- nothing is pre-selected; you choose."
+    "convenience only, nothing is pre-selected; you choose."
 )
 
 col1, col2 = st.columns(2)

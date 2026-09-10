@@ -62,7 +62,7 @@ with st.container(border=True):
     )
     single_fig.update_layout(
         template="plotly_white",
-        title=f"{selected_country} -- Annual Reported-Case Total",
+        title=f"{selected_country}: Annual Reported-Case Total",
         xaxis_title="Year",
         yaxis_title="Reported-case total",
         height=420,

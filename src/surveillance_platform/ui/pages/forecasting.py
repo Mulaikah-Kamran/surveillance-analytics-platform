@@ -58,7 +58,9 @@ population_by_country = data_loading.population_by_country_series(population_dat
 def _track_label(t) -> str:
     case_def = t.case_definition if t.case_definition is not None else "(constant)"
     status = "eligible" if t.eligible else "below threshold"
-    return f"{t.country} — {case_def} ({t.n_months} months, {status}, data through {t.end})"
+    return (
+        f"{t.country}, {case_def} ({t.n_months} months, {status}, data through {t.end})"
+    )
 
 
 selected_label = st.selectbox("Track", [_track_label(t) for t in tracks], index=0)
@@ -67,7 +69,7 @@ track_key = (selected_track.country, selected_track.case_definition)
 
 st.caption(
     f"This track's real data runs from **{selected_track.start}** to "
-    f"**{selected_track.end}** ({selected_track.n_months} months) -- the forecast "
+    f"**{selected_track.end}** ({selected_track.n_months} months). The forecast "
     "below starts the month immediately after, not after today's date."
 )
 
@@ -78,7 +80,7 @@ _FACTS = [
         "'dinga pepo', describing a sudden, cramp-like seizure."
     ),
     (
-        "Only female Aedes mosquitoes bite -- they need the blood protein to "
+        "Only female Aedes mosquitoes bite; they need the blood protein to "
         "develop their eggs."
     ),
     (
@@ -91,7 +93,7 @@ _FACTS = [
     ),
     (
         "Unlike malaria mosquitoes, Aedes aegypti can breed in tiny amounts of "
-        "standing water -- even a bottle cap."
+        "standing water, even a bottle cap."
     ),
     (
         "SARIMA models capture seasonality by comparing each month not just to "
@@ -164,7 +166,7 @@ if result.forecast_mean:
         else "(constant)"
     )
     st.subheader(
-        f"Forecast (rate per 100,000) -- {selected_track.country} — {case_def}: "
+        f"Forecast (rate per 100,000) for {selected_track.country}, {case_def}: "
         f"{forecast_start} to {forecast_end}"
     )
     st.caption(

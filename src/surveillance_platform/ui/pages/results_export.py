@@ -23,7 +23,7 @@ st.markdown(
     "Download a complete, self-contained HTML report covering every "
     "stage completed so far (data preparation, exploratory analysis, "
     "visualization, and any forecasts you've viewed). Open it in any "
-    "browser -- no need to run this app."
+    "browser; no need to run this app."
 )
 
 report_html = build_report_html(session)

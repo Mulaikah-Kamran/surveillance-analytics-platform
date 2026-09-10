@@ -18,6 +18,7 @@ from surveillance_platform.data_loading.loading import FileTooLargeError, load_c
 from surveillance_platform.data_loading.sample_dataset import (
     ChecksumMismatchError,
     get_sample_dataset,
+    get_starter_sample_dataset,
 )
 from surveillance_platform.data_loading.sanity_check import check_spatial_resolution
 
@@ -161,3 +162,37 @@ def test_get_sample_dataset_raises_on_checksum_mismatch(tmp_path):
     ):
         get_sample_dataset()
     assert not target_path.exists()  # never cached a bad download
+
+
+def test_get_starter_sample_dataset_filters_to_the_four_study_countries(tmp_path):
+    """The full extract has many countries -- the starter download must
+    only ever contain the four this project was built around (ADR-008),
+    regardless of what else is in the cached/downloaded file.
+    """
+    cached_file = tmp_path / "National_extract_V1_3.csv"
+    cached_file.write_text(
+        "adm_0_name,calendar_start_date,dengue_total\n"
+        "SRI LANKA,2020-01-01,10\n"
+        "AFGHANISTAN,2020-01-01,5\n"
+        "BANGLADESH,2020-01-01,20\n"
+        "YEMEN,2020-01-01,3\n"
+        "MALDIVES,2020-01-01,1\n"
+        "NEPAL,2020-01-01,2\n"
+    )
+
+    with patch(
+        "surveillance_platform.data_loading.sample_dataset.OUTPUT_PATH", cached_file
+    ):
+        result = get_starter_sample_dataset()
+
+    result_text = result.decode("utf-8")
+    assert "SRI LANKA" in result_text
+    assert "BANGLADESH" in result_text
+    assert "MALDIVES" in result_text
+    assert "NEPAL" in result_text
+    assert "AFGHANISTAN" not in result_text
+    assert "YEMEN" not in result_text
+    # The shared cache file itself must stay the full, unfiltered
+    # download -- other tooling (M2's own acquisition tests) expects
+    # the complete National Extract at that path.
+    assert "AFGHANISTAN" in cached_file.read_text()

@@ -330,7 +330,7 @@ def _forecasting_section(session: AnalysisSession) -> str:
         return ""
     blocks = []
     for (country, case_definition), result in forecast_by_track.items():
-        label = f"{_esc(country)} — {_esc(case_definition) if case_definition else '(constant)'}"
+        label = f"{_esc(country)}, {_esc(case_definition) if case_definition else '(constant)'}"
         warnings_html = "".join(
             f'<div class="warning-banner">{_esc(m)}</div>' for m in result.limitations
         )

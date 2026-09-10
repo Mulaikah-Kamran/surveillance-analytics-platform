@@ -14,6 +14,9 @@ import streamlit as st
 from surveillance_platform import data_loading, workflow
 
 cached_get_sample_dataset = st.cache_data(data_loading.get_sample_dataset)
+cached_get_starter_sample_dataset = st.cache_data(
+    data_loading.get_starter_sample_dataset
+)
 cached_fetch_population_data = st.cache_data(data_loading.fetch_population_data)
 cached_run_preparation = st.cache_data(workflow.run_preparation)
 cached_run_eda = st.cache_data(workflow.run_eda)
