@@ -22,9 +22,6 @@ if session.dataset is None:
 columns = list(session.dataset.columns)
 suggestions = suggest_roles(session.dataset)
 
-st.caption("Column types:")
-st.dataframe(session.dataset.dtypes.astype(str).rename("dtype"))
-
 st.markdown(
     "Assign each required role to a column. Suggestions are a "
     "convenience only -- nothing is pre-selected; you choose."
