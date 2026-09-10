@@ -29,15 +29,9 @@ streamlit run app.py
 
 No dataset handy? The app has a "download sample dataset" button that grabs the real one used throughout this project.
 
-## Does the forecasting actually work?
+## Forecasting, tested honestly against a real baseline
 
-Yes and no, and that's the honest answer. Tested against a simple "repeat last year" baseline on real data:
-
-- **Sri Lanka**: the real model wins clearly
-- **Maldives**: the real model wins
-- **Bangladesh**: the simple baseline actually wins
-
-A tool that only shows its wins isn't trustworthy. This one shows both.
+Every forecast is checked against a simple "repeat last year" baseline instead of just reporting its own accuracy in isolation, and both results get shown either way. On real data: the real model clearly wins for Sri Lanka and Maldives, and the simple baseline actually wins for Bangladesh. See [`docs/forecasting.md`](docs/forecasting.md) for the full breakdown, including why that matters more than it might sound.
 
 ## How it's built
 
