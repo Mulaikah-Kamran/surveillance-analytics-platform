@@ -233,7 +233,7 @@ def test_standardize_time_does_not_mutate_input():
 
 def test_clean_applies_casing_correction():
     data = _synthetic_dataset()
-    cleaned, _, actions = clean(data, findings=[])
+    cleaned, _, actions = clean(data, findings=[], role_config=ROLE_CONFIG)
     assert (cleaned["case_definition_standardised"] == "confirmed").sum() == 0
     assert any("case_definition_standardised" in action for action in actions)
 
@@ -246,7 +246,9 @@ def test_clean_excludes_rows_missing_required_value():
         message="missing",
         row_indices=[5],
     )
-    cleaned, exclusion_reasons, _ = clean(data, findings=[finding])
+    cleaned, exclusion_reasons, _ = clean(
+        data, findings=[finding], role_config=ROLE_CONFIG
+    )
     assert 5 not in cleaned.index
     assert exclusion_reasons["missing_required_value"] == 1
 
@@ -259,7 +261,9 @@ def test_clean_excludes_rows_with_unparseable_time():
         message="unparseable",
         row_indices=[7],
     )
-    cleaned, exclusion_reasons, _ = clean(data, findings=[finding])
+    cleaned, exclusion_reasons, _ = clean(
+        data, findings=[finding], role_config=ROLE_CONFIG
+    )
     assert 7 not in cleaned.index
     assert exclusion_reasons["unparseable_time"] == 1
 
@@ -274,21 +278,61 @@ def test_clean_does_not_correct_interval_inversion():
         message="inverted",
         row_indices=[6],
     )
-    cleaned, exclusion_reasons, _ = clean(data, findings=[finding])
+    cleaned, exclusion_reasons, _ = clean(
+        data, findings=[finding], role_config=ROLE_CONFIG
+    )
     assert 6 in cleaned.index
     assert "interval_inversion" not in exclusion_reasons
 
 
 def test_clean_does_not_remove_legitimate_zero_values():
     data = _synthetic_dataset()
-    cleaned, _, _ = clean(data, findings=[])
+    cleaned, _, _ = clean(data, findings=[], role_config=ROLE_CONFIG)
     assert (cleaned["dengue_total"] == 0).sum() == 2
+
+
+def test_assess_quality_flags_non_numeric_surveillance_measure():
+    data = _synthetic_dataset()
+    data["dengue_total"] = data["dengue_total"].astype(object)
+    data.loc[0, "dengue_total"] = "unknown"
+    findings = assess_quality(data, ROLE_CONFIG)
+    matching = [f for f in findings if f.check == "non_numeric_surveillance_measure"]
+    assert len(matching) == 1
+    assert matching[0].row_indices == [0]
+
+
+def test_prepare_excludes_non_numeric_measure_and_fixes_the_column_dtype():
+    """Real bug, caught via a real browser reproduction: a surveillance
+    measure column with a genuine mix of numbers and non-numeric
+    placeholder text (e.g. 'unknown') passed the existing missing-
+    value check (the text isn't null), then crashed forecasting's
+    rate calculation downstream with a raw TypeError, because pandas
+    keeps a column at dtype 'object' once it has seen any non-numeric
+    value, even after the offending rows are excluded.
+
+    This is an end-to-end test through the real prepare() pipeline,
+    not just the unit-level exclusion check, specifically to verify
+    the dtype itself is fixed, not just the row count -- that's the
+    part a narrower test could miss and still let the real crash
+    through.
+    """
+    data = _synthetic_dataset()
+    data["dengue_total"] = data["dengue_total"].astype(object)
+    data.loc[0, "dengue_total"] = "unknown"
+    data.loc[1, "dengue_total"] = "not available"
+
+    result = prepare(data, ROLE_CONFIG)
+
+    assert 0 not in result.data.index
+    assert 1 not in result.data.index
+    assert result.report.exclusion_reasons["non_numeric_surveillance_measure"] == 2
+    assert pd.api.types.is_numeric_dtype(result.data["dengue_total"])
 
 
 def test_clean_does_not_mutate_input():
     data = _synthetic_dataset()
     original = data.copy()
-    clean(data, findings=[])
+    clean(data, findings=[], role_config=ROLE_CONFIG)
     pd.testing.assert_frame_equal(data, original)
 
 

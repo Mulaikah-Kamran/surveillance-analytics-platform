@@ -118,6 +118,43 @@ def _check_interval_inversion(
     ]
 
 
+def _check_non_numeric_surveillance_measure(
+    data: pd.DataFrame, role_config: RoleConfiguration
+) -> list[QualityFinding]:
+    """Flag rows where the surveillance measure isn't null, but also
+    isn't a usable number (e.g. placeholder text like 'unknown' or
+    'not available', sometimes used in real surveillance exports in
+    place of a true missing value).
+
+    Caught via a real crash, not assumed: a column with a genuine mix
+    of numbers and non-numeric text passed the existing missing-value
+    check (since the text values aren't null), then reached
+    forecasting's population-rate calculation and raised a raw
+    TypeError there, with a full stack trace shown to the user
+    instead of a clear message at the right stage.
+    """
+    column = data[role_config.surveillance_measure]
+    non_null_mask = column.notna()
+    numeric = pd.to_numeric(column, errors="coerce")
+    non_numeric_mask = non_null_mask & numeric.isna()
+    if not non_numeric_mask.any():
+        return []
+
+    row_indices = data.index[non_numeric_mask].tolist()
+    return [
+        QualityFinding(
+            check="non_numeric_surveillance_measure",
+            severity="warning",
+            message=(
+                f"{len(row_indices)} row(s) have a non-numeric value for "
+                f"required role 'surveillance_measure' "
+                f"(column '{role_config.surveillance_measure}')."
+            ),
+            row_indices=row_indices,
+        )
+    ]
+
+
 def _check_missing_required_values(
     data: pd.DataFrame, role_config: RoleConfiguration
 ) -> list[QualityFinding]:
@@ -157,6 +194,7 @@ def assess_quality(
     findings: list[QualityFinding] = []
     findings.extend(_check_duplicate_key(data, role_config))
     findings.extend(_check_negative_surveillance_measure(data, role_config))
+    findings.extend(_check_non_numeric_surveillance_measure(data, role_config))
     findings.extend(_check_interval_inversion(data, role_config))
     findings.extend(_check_missing_required_values(data, role_config))
     return findings

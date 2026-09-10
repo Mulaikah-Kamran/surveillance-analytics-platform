@@ -53,7 +53,7 @@ def prepare(
     all_findings = quality_findings + temporal_findings
 
     cleaned_data, exclusion_reasons, cleaning_actions = cleaning.clean(
-        standardized_data, all_findings
+        standardized_data, all_findings, role_config
     )
 
     rows_in = len(raw_data)
