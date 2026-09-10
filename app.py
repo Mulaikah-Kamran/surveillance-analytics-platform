@@ -49,6 +49,17 @@ st.markdown(
     [data-testid="stSidebarNavLink"] span[label] {
         font-size: 1.15rem;
     }
+    /* Desktop-width viewports only: the same size that reads fine on
+    a narrow phone screen looked heavy and oversized on a wider
+    laptop browser, confirmed directly, not assumed -- softened back
+    down for wider viewports specifically rather than picking one
+    compromise size that would be wrong for both. */
+    @media (min-width: 641px) {
+        [data-testid="stSidebarNavLink"] span[label] {
+            font-size: 1.02rem;
+            font-weight: 450;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
