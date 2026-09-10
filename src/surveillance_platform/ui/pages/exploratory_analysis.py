@@ -56,6 +56,36 @@ def _fmt(value: float) -> str:
     return f"{value:,.1f}" if value != int(value) else f"{value:,.0f}"
 
 
+# --- The story, told in one line, before any table ---------------------
+
+countries = eda.country_comparison.countries
+n_countries = len(countries)
+d = eda.descriptive
+busiest = max(countries, key=lambda c: c.descriptive.maximum, default=None)
+
+st.markdown(
+    f"## {d.count:,} reports, {n_countries} "
+    f"{'country' if n_countries == 1 else 'countries'}, one story"
+)
+if busiest is not None:
+    st.caption(
+        f"The single biggest reported total in this dataset came from "
+        f"**{busiest.country}**, at {_fmt(busiest.descriptive.maximum)} in one "
+        f"reporting period."
+    )
+
+# A real, native chart, not just tables -- total reported cases by
+# country, giving this page some visual life immediately rather than
+# making someone scroll to the Visualization page just to see a shape.
+if n_countries > 1:
+    country_totals: dict[str, float] = {}
+    for cy in eda.time_series.country_years:
+        country_totals[cy.country] = (
+            country_totals.get(cy.country, 0) + cy.reported_case_total
+        )
+    st.bar_chart(country_totals, height=260)
+    st.caption("Total reported cases by country, across the whole dataset.")
+
 # --- The one finding worth seeing first, if it exists ----------------------
 
 heterogeneous_years = [
@@ -65,7 +95,7 @@ heterogeneous_years = [
 ]
 if heterogeneous_years:
     with st.container(border=True):
-        st.markdown("**Worth knowing before you trust a trend line**")
+        st.markdown("**⚠️ Worth knowing before you trust a trend line**")
         st.caption(
             f"{len(heterogeneous_years)} country-year(s) had a reporting "
             "inconsistency, which can distort a trend if read at face value."
@@ -91,8 +121,8 @@ if heterogeneous_years:
 # --- Summary card ------------------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("Summary")
-    d, dist = eda.descriptive, eda.distribution
+    st.subheader("📊 Summary")
+    dist = eda.distribution
     col1, col2, col3 = st.columns(3)
     col1.metric("Observations", f"{d.count:,}")
     col1.metric("Zero-value share", f"{dist.zero_value_share:.1%}")
@@ -108,7 +138,7 @@ with st.container(border=True):
 # --- Data quality card ---------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("Data quality")
+    st.subheader("🔍 Data quality")
     m = eda.missingness
     incomplete_columns = {c: v for c, v in m.missing_counts.items() if v > 0}
     if incomplete_columns:
@@ -151,7 +181,7 @@ with st.container(border=True):
 # --- By country card ----------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("By country")
+    st.subheader("🌍 By country")
     for entry in eda.country_comparison.countries:
         with st.expander(f"{entry.country} ({entry.observation_count:,} observations)"):
             cd = entry.descriptive

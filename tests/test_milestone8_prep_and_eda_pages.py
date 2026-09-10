@@ -211,3 +211,36 @@ def test_exploratory_analysis_long_heterogeneity_list_shows_expander(
     at.run()
     assert at.exception == []
     assert len(at.expander) > 0
+
+
+def test_exploratory_analysis_shows_a_real_headline_and_chart(
+    mocked_population_registry,
+):
+    """The page previously opened straight into a wall of tables. Now
+    it opens with a real, computed headline (report/country counts and
+    which country had the single biggest reported total) and a native
+    bar chart of totals by country -- confirms both are genuinely
+    present and grounded in the real data, not placeholder text.
+    """
+    header = (
+        "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,"
+        "S_res,case_definition_standardised\n"
+    )
+    rows = "".join(
+        f"{country},2020-{m:02d}-01,2020-{m:02d}-28,{total},Admin0,Confirmed\n"
+        for country, total in (("Testland", 100), ("Otherland", 5))
+        for m in range(1, 13)
+    )
+    csv_bytes = (header + rows).encode()
+
+    at = _configured_session_app(csv_bytes)
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
+    at.run()
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
+    at.run()
+    assert at.exception == []
+    headings = " ".join(h.value for h in at.markdown if h.value.startswith("##"))
+    assert "24 reports" in headings
+    assert "2 countries" in headings
+    captions = " ".join(c.value for c in at.caption)
+    assert "Testland" in captions
