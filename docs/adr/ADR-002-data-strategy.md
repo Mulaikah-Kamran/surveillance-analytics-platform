@@ -1,46 +1,17 @@
-# ADR-002 — Data Strategy
+# ADR-002: The main data source
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-Use the OpenDengue data resource, specifically the National Extract, as
-the foundation for Version 1. The study dataset consists of 3–5 South
-Asian countries, finalized after objective evaluation of data
-completeness and suitability.
+This project uses OpenDengue's National Extract as its main dataset, focused on 3 to 5 South Asian countries.
 
-## Alternatives Considered
+## The alternative
 
-OpenDengue Temporal Extract.
+OpenDengue also publishes a Temporal Extract with finer geographic detail, down to the district level.
 
-## Context
+## Why National, not Temporal
 
-The project aims to build a reproducible analytical workflow for
-surveillance-derived datasets that supports public health analysts
-through validation, profiling, quality assessment, standardization,
-cleaning, descriptive analysis, visualization, and forecasting.
+The Temporal Extract sounds better on paper, more detail is usually good. But 93% of its rows are at the district level, which adds a lot of complexity without actually helping this project answer its core question: can a well-built pipeline turn messy surveillance data into something useful for forecasting?
 
-## Rationale
-
-The National Extract aligns more closely with the intended analytical
-workflow by providing a consistent country-level view suitable for
-longitudinal analysis and forecasting. Although the Temporal Extract
-offers finer spatial resolution, its predominance of Admin2-level
-records (~93% of rows) introduces additional complexity outside the
-scope of Version 1 and does not improve the platform's ability to
-answer the project's engineering research question.
-
-## Consequences
-
-- **Positive:** Better alignment with project objectives; simpler and
-  more reproducible analytical workflow; strong foundation for
-  forecasting; clearer repository narrative.
-- **Negative:** No district-level spatial analysis in Version 1; some
-  geographic detail is intentionally deferred.
-
-## Scope Note
-
-The choice of the National Extract should not be interpreted as a
-claim that it is universally superior to the Temporal Extract. It is
-the most appropriate choice for the objectives and scope of Version 1
-of this project.
+The National Extract gives a cleaner, country-level view that's easier to work with and better suited to spotting long-term trends. The trade-off is no district-level analysis in this version, which is fine. That's not what this project set out to do.

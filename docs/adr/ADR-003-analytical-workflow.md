@@ -1,10 +1,10 @@
-# ADR-003 — Analytical Workflow
+# ADR-003: The order things happen in
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-The analytical workflow is intentionally ordered as follows:
+Every dataset that goes through this pipeline follows the same fixed order:
 
 ```
 Validation
@@ -26,6 +26,4 @@ Forecasting
 Reporting
 ```
 
-If validation fails, execution stops, the Analysis Session is marked
-Failed, diagnostic information is preserved, and control returns to the
-user interface. Downstream analytical modules are not executed.
+If validation fails at the start, everything stops right there. The session gets marked as failed, the reason gets saved, and nothing downstream runs. No partial results, no silent guesswork.

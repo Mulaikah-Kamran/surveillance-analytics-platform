@@ -36,7 +36,7 @@ class DistributionSummary:
     """A minimal distribution summary for the Surveillance Measure column.
 
     ``zero_value_share`` mirrors the metric already used in Milestone
-    2's data quality profile (``docs/datasets/05_data_quality_profile.md``),
+    2's data quality profile (``docs/about-the-data.md``),
     not a newly invented statistic.
     """
 

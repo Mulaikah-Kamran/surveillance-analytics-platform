@@ -1,48 +1,26 @@
-"""Acquire the Milestone 9 validation dataset (ADR-011) into data/raw/.
+"""Acquire the second validation dataset (ADR-011) into data/raw/.
 
-Source: CDC NNDSS weekly data, single-table resource
-(data.cdc.gov/resource/x9gk-5huc), a live, currently-updating
-government Socrata API -- not a versioned release archive like
-OpenDengue's, so there is no fixed checksum to pin. Reproducibility
-here means: the same query parameters (condition, date range) will
-always return the same *historical* rows, though the live resource
-continues to grow with new weeks after this script's documented
-acquisition date.
+Source: CDC NNDSS weekly data, a live government API. Unlike
+OpenDengue's fixed release, this keeps growing over time, so
+reproducing this download later will pick up a few more recent weeks,
+not fewer or different historical rows.
 
-This script performs acquisition and the *minimum* structural
-transformation needed to produce a valid pipeline input -- not
-cleaning. Per M2's own acquisition/cleaning boundary
-(docs/datasets/01_acquisition.md), acquisition should not parse,
-clean, standardize, or otherwise transform data beyond what's needed
-to get it into a loadable shape; the pipeline's own Data Preparation
-stage (M4) is where missingness and quality assessment belong.
+This script only reshapes the data enough to load it (CDC splits time
+into separate year/week columns, so those get combined into one date
+column). Actual cleaning still happens in the normal pipeline step,
+not here.
 
-The one unavoidable structural step: CDC represents time as two
-separate columns (year, week), but our Role Configuration model
-(ADR-004) requires a Time role to be a single column of date-parseable
-values. Combining them here is the direct analogue of OpenDengue's own
-already-ready calendar_start_date column -- not a cleaning decision.
-
-Two decisions ARE made here, deliberately documented as acquisition
-choices, not silent defaults (see the M9 Dataset Compatibility Report,
-docs/m9-dataset-compatibility-report.md, Sections 4 and 9 for the full
-evidence):
-
-1. Location is filtered to the 50 states + DC only, excluding US
-   territories, Census regional aggregates, and national totals
-   (TOTAL/US RESIDENTS/Total) -- the direct analogue of OpenDengue's
-   own S_res=Admin0 pre-filtering to one consistent granularity before
-   the pipeline ever sees the data. Left unfiltered, "Alabama" and
-   "TOTAL" would be treated as equally distinct, non-overlapping
-   Location values by the pipeline, corrupting any aggregate statistic.
-2. Case is normalized to title case (Alabama, not ALABAMA/alabama),
-   resolving the casing inconsistency found directly in the raw data.
+Two choices made here, worth knowing about: locations are filtered
+down to the 50 states plus DC (dropping territories, regions, and
+national totals, which would otherwise look like extra "locations" and
+throw off any aggregate statistic), and state names are normalized to
+one consistent capitalization. See docs/m9-validation-results.md for
+what happened when this data ran through the full pipeline.
 
 Usage:
     python data/download_nndss_validation_dataset.py [CONDITION]
 
-    CONDITION defaults to "Chlamydia trachomatis infection" (the
-    condition profiled in the Compatibility Report). Any other single,
+    CONDITION defaults to "Chlamydia trachomatis infection". Any other single,
     unstratified label works the same way.
 
 Output:

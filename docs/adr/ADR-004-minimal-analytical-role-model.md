@@ -1,34 +1,15 @@
-# ADR-004 — Minimal Analytical Role Model
+# ADR-004: Letting the user tell us what's what
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-Required Analytical Roles: Time, Location, Surveillance Measure.
-Optional Analytical Role: Identifier. Generic handling of all
-additional variables. Users explicitly assign the required roles
-before analysis begins. The platform validates that selected columns
-satisfy expected structural characteristics but does not assign roles
-automatically.
+Every dataset needs three things labeled before it can be analyzed: Time, Location, and a Surveillance Measure (like case counts). An optional fourth, an Identifier, can be added too.
 
-## Rationale
+The user picks these columns themselves. The app never guesses.
 
-Version 1 evaluates the portability of the analytical workflow and
-software architecture across surveillance-derived datasets — not the
-ability to infer semantic meaning from arbitrary schemas. Automatic
-role inference would introduce a separate methodological component
-requiring independent evaluation and would broaden the project's
-claims beyond its intended scope.
+## Why not just auto-detect them
 
-## Optional UI Guidance
+It would be easy to have the app guess which column is which based on the name or the data type. But that guessing is its own can of worms: it needs to be tested and proven reliable across all kinds of messy real-world data, and that's a much bigger, different problem than the one this project is solving.
 
-The interface may visually highlight columns whose names or data types
-are commonly associated with a required role, as a convenience. These
-highlights never assign roles, never pre-select roles, and always
-require explicit user confirmation.
-
-## Explicit Boundary
-
-Version 1 performs role validation, not semantic role inference.
-Automatic semantic role inference is explicitly outside the scope of
-this project.
+Keeping it manual keeps the scope honest. The app can still give hints, for example, highlighting a column that looks like a date, but it never picks anything for the user. They always confirm it themselves.

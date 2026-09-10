@@ -1,20 +1,11 @@
-# ADR-001 — Primary User
+# ADR-001: Who this is built for
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-The primary user is the Public Health Analyst.
+The primary user is the public health analyst, someone who works with surveillance data day to day.
 
-## Context
+## Why it matters
 
-The platform requires a single, well-defined primary user persona for
-Version 1 so that architectural decisions have a clear standard to be
-judged against.
-
-## Consequences
-
-All architectural decisions in Version 1 should support this user. The
-repository's broader audience (reviewers, researchers, engineers) is
-distinct from this software persona — see the Freeze Document, Section
-22, Repository Strategy.
+Every design choice in this project gets checked against one question: does this help that person do their job? Having one clear user in mind keeps the platform focused instead of trying to be everything to everyone.

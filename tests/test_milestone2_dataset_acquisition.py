@@ -13,7 +13,7 @@ introduced in the milestone that first needs it for real analytical
 work. These tests therefore use only the standard library `csv` module.
 
 The raw dataset itself is never committed (see data/README.md and
-docs/datasets/01_acquisition.md), so tests that need the actual file
+docs/about-the-data.md), so tests that need the actual file
 skip gracefully — rather than fail — when it isn't present locally,
 e.g. in CI. Run `python data/download_national_extract.py` first to
 exercise the skipped checks.
@@ -30,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DOWNLOAD_SCRIPT = REPO_ROOT / "data" / "download_national_extract.py"
 RAW_CSV = REPO_ROOT / "data" / "raw" / "National_extract_V1_3.csv"
 
-# Schema documented in docs/datasets/03_schema.md — kept in sync manually,
+# Schema documented in docs/about-the-data.md — kept in sync manually,
 # since this is a documentation-verification test, not a schema-inference
 # tool.
 EXPECTED_COLUMNS = [
@@ -52,7 +52,7 @@ EXPECTED_COLUMNS = [
     "UUID",
 ]
 
-# Selected in docs/decision_logs/2026-08-01_country_selection.md.
+# Selected in docs/adr/ADR-008-study-country-selection.md.
 SELECTED_COUNTRIES = ["SRI LANKA", "BANGLADESH", "MALDIVES", "NEPAL"]
 
 skip_if_not_acquired = pytest.mark.skipif(
@@ -69,7 +69,7 @@ def _load_download_script():
     """Import data/download_national_extract.py as a module.
 
     It lives outside the src/ package layout deliberately (see
-    docs/datasets/01_acquisition.md) — it's a one-off acquisition script,
+    docs/about-the-data.md) — it's a one-off acquisition script,
     not part of the installed analytical package.
     """
     spec = importlib.util.spec_from_file_location(
@@ -126,7 +126,7 @@ def test_selected_countries_exist_in_dataset():
     for country in SELECTED_COUNTRIES:
         assert country in countries_present, (
             f"{country} was selected in "
-            "docs/decision_logs/2026-08-01_country_selection.md but does "
+            "docs/adr/ADR-008-study-country-selection.md but does "
             "not appear in the downloaded National Extract"
         )
 
@@ -134,7 +134,7 @@ def test_selected_countries_exist_in_dataset():
 @skip_if_not_acquired
 def test_no_duplicate_country_reporting_period_rows():
     """(country, start_date, end_date) has zero duplicates, as documented
-    in docs/datasets/03_schema.md — this is the dataset's true row key."""
+    in docs/about-the-data.md — this is the dataset's true row key."""
     seen = set()
     with open(RAW_CSV, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)

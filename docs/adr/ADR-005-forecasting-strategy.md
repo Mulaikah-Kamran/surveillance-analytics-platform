@@ -1,18 +1,11 @@
-# ADR-005 — Forecasting Strategy (Revised)
+# ADR-005: One forecasting model, not a bake-off
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-Version 1 implements one primary forecasting workflow, evaluated
-against an appropriate transparent baseline where scientifically
-justified. The purpose of the baseline is evaluation, not algorithm
-competition.
+This project builds one forecasting model and compares it against a simple baseline. It does not try out multiple competing models and pick a winner.
 
-## Rationale
+## Why
 
-The project remains centered on research software engineering rather
-than machine learning benchmarking. Including a transparent baseline
-strengthens methodological rigor by allowing the forecasting workflow
-to be evaluated against a simple reference point without expanding the
-project into a multi-model comparison study.
+The point here is good engineering, not a machine learning competition. A simple baseline is enough to check whether the real model is actually adding value. Testing five different models against each other would turn this into a different kind of project entirely.

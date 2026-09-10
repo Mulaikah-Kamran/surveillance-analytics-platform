@@ -4,7 +4,7 @@ This script performs acquisition only: it downloads the official release
 archive from the OpenDengue GitHub repository, verifies it against the
 recorded checksum, and extracts the single CSV it contains. It does not
 parse, clean, standardize, or otherwise transform the data — see
-docs/datasets/01_acquisition.md for why that boundary matters (Milestone 2
+docs/about-the-data.md for why that boundary matters (Milestone 2
 is Data Acquisition & Understanding, not Data Engineering).
 
 Per the Freeze Document (Section 23, Data Versioning), the downloaded CSV
@@ -29,7 +29,7 @@ import zipfile
 from pathlib import Path
 
 # Pinned to the exact tagged release used throughout this project.
-# See docs/datasets/01_acquisition.md for why the tag (not "main") is used.
+# See docs/about-the-data.md for why the tag (not "main") is used.
 RELEASE_TAG = "v1.3.0"
 ARCHIVE_URL = (
     "https://raw.githubusercontent.com/OpenDengue/master-repo/"

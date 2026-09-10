@@ -1,43 +1,27 @@
 # Data
 
-This directory is reserved for lightweight or example data only. Per
-the Freeze Document (Section 23, Git & Version Control Strategy, Data
-Versioning):
+Raw data files aren't stored in this repo. They're downloaded fresh using the scripts here, and everything is verified against a pinned checksum so you always get the exact same file.
 
-> Do not commit the full OpenDengue dataset to GitHub. Instead:
-> document how to obtain it, document the exact version used, document
-> preprocessing steps, include only small synthetic/example data if
-> needed for demonstration.
+## Getting the main dataset
 
-No data is present at Milestone 1. Dataset acquisition, documentation
-of the exact OpenDengue National Extract version used, and any small
-example data begin in Milestone 2 (Data Acquisition & Understanding).
+```bash
+python data/download_national_extract.py
+```
 
-## Milestone 2: acquiring the OpenDengue National Extract
+Downloads the OpenDengue National Extract used throughout this project. See [`docs/about-the-data.md`](../docs/about-the-data.md) for what's actually in it.
 
-Run `python data/download_national_extract.py` to download the exact
-OpenDengue National Extract (version 1.3, GitHub release tag `v1.3.0`)
-used throughout this project. The script fetches the official release
-archive, verifies it against a pinned SHA-256 checksum, and extracts
-the single CSV into `data/raw/` — a directory that is git-ignored by
-design (see `.gitignore` and Section 23 of the Freeze Document).
+## Getting population figures
 
-The script performs acquisition only — no parsing beyond unzipping, no
-cleaning, no column renaming. See
-[`docs/datasets/01_acquisition.md`](../docs/datasets/01_acquisition.md)
-for the full source, citation, licensing, and version details, and the
-rest of `docs/datasets/` for schema, quality-profile, and dataset
-landscape documentation produced during Milestone 2.
+```bash
+python data/download_population_reference.py
+```
 
-## Milestone 5: acquiring the WDI population reference
+Downloads World Bank population data for the four study countries, used to convert raw case counts into rates. This step is optional, everything else works fine without it.
 
-Run `python data/download_population_reference.py` to download the
-World Bank World Development Indicators population reference (`SP.POP.TOTL`)
-for the four ADR-008 study countries, used only for Milestone 5's
-optional population-normalized reported-case rate. The script queries
-the WDI API, verifies the response against a pinned SHA-256 checksum,
-and writes a minimal `country, year, population` CSV into `data/raw/`
-— also git-ignored, following the same pattern as the OpenDengue
-extract. See [`docs/eda.md`](../docs/eda.md) for the full source,
-licensing, and methodology details, including why this is optional and
-never a required input to `analyze()`.
+## Getting the second, validation dataset
+
+```bash
+python data/download_nndss_validation_dataset.py
+```
+
+Downloads a completely different disease surveillance dataset (from the CDC) used to check that the pipeline generalizes beyond the original dengue data. See [`docs/m9-validation-results.md`](../docs/m9-validation-results.md) for what happened when it did.

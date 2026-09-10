@@ -2,7 +2,7 @@
 
 These checks are grounded in the current OpenDengue study dataset and
 Milestone 2's data quality profile (see
-``docs/datasets/05_data_quality_profile.md``); they are not universal
+``docs/about-the-data.md``); they are not universal
 assumptions about all surveillance datasets. Milestone 9 will
 determine what, if anything, needs adaptation for a second dataset.
 

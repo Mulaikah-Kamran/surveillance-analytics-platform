@@ -1,47 +1,19 @@
-# Architecture Decision Records (ADR)
+# Architecture decisions
 
-This directory is the historical record of the project's major, locked
-design decisions, as required by the Freeze Document (Section 21,
-Documentation Philosophy: *"ADRs record architectural reasoning"*).
+This is the record of the big design choices behind this project, and why they were made.
 
-Per the Freeze Document's ADR Creation Rule (Section 23): an ADR is
-created only when a decision has multiple reasonable alternatives,
-affects future architecture, would be difficult to reverse, or would
-otherwise be hard to remember later. Once an ADR is locked, it is
-considered stable (Section 32, ADR Discipline) — revisions happen only
-when implementation reveals a genuine engineering issue, and any
-revision is made explicitly as a new ADR revision, synchronized across
-every dependent document, never silently.
+New records only get added when a decision is genuinely hard to reverse or worth remembering later. Once something's locked here, it stays that way unless a real problem comes up.
 
-## Index
-
-| ADR | Title |
+| ADR | What it covers |
 |-----|-------|
-| [ADR-001](ADR-001-primary-user.md) | Primary User |
-| [ADR-002](ADR-002-data-strategy.md) | Data Strategy |
-| [ADR-003](ADR-003-analytical-workflow.md) | Analytical Workflow |
-| [ADR-004](ADR-004-minimal-analytical-role-model.md) | Minimal Analytical Role Model |
-| [ADR-005](ADR-005-forecasting-strategy.md) | Forecasting Strategy (Revised) |
-| [ADR-006](ADR-006-user-interface-strategy.md) | User Interface Strategy |
-| [ADR-007](ADR-007-temporal-standardization-strategy.md) | Temporal Standardization Strategy |
-| [ADR-008](ADR-008-study-country-selection.md) | Study Country Selection |
-| [ADR-009](ADR-009-forecasting-strategy.md) | Forecasting Input, Model, and Evaluation Strategy |
-| [ADR-010](ADR-010-ui-integration-strategy.md) | UI Integration Strategy |
-| [ADR-011](ADR-011-m9-validation-dataset-selection.md) | Milestone 9 Validation Dataset Selection |
-
-ADR-001 through ADR-007 were locked during project planning (Phase 0)
-and are reproduced here from the Freeze Document, Section 18, as the
-authoritative historical record within the repository itself. ADR-008
-is the first ADR created during implementation rather than planning —
-Milestone 2's roadmap entry explicitly calls for the study country
-selection to be recorded as an ADR, since it fixes a concrete input to
-every later milestone and would be difficult to reverse once Milestone 3
-begins building against it. ADR-009 similarly resolves, using the
-actual acquired data, the specific model/input/evaluation decisions
-that ADR-005 deliberately left open during planning. ADR-010 resolves,
-in the same evidence-based way, the Workflow Controller, Analysis
-Session, dataset-ingestion, and UI-specific decisions ADR-006
-deliberately left open. ADR-011 resolves the validation-dataset choice
-the Risk Register's R-001 deliberately left open during planning,
-following the same accessibility-verification standard R-001 already
-established when it rejected the originally-considered candidate.
+| [ADR-001](ADR-001-primary-user.md) | Who this is built for |
+| [ADR-002](ADR-002-data-strategy.md) | The main data source |
+| [ADR-003](ADR-003-analytical-workflow.md) | The order things happen in |
+| [ADR-004](ADR-004-minimal-analytical-role-model.md) | Letting the user tell us what's what |
+| [ADR-005](ADR-005-forecasting-strategy.md) | One forecasting model, not a bake-off |
+| [ADR-006](ADR-006-user-interface-strategy.md) | Keeping the interface dumb on purpose |
+| [ADR-007](ADR-007-temporal-standardization-strategy.md) | Picking one date per record |
+| [ADR-008](ADR-008-study-country-selection.md) | Which countries made the cut |
+| [ADR-009](ADR-009-forecasting-strategy.md) | How forecasting actually works |
+| [ADR-010](ADR-010-ui-integration-strategy.md) | How the app is put together |
+| [ADR-011](ADR-011-m9-validation-dataset-selection.md) | Picking a second dataset to test the pipeline on |

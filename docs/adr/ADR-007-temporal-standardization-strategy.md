@@ -1,22 +1,11 @@
-# ADR-007 — Temporal Standardization Strategy
+# ADR-007: Picking one date per record
 
 **Status:** Locked
 
-## Decision
+## The decision
 
-Version 1 standardizes temporal information to a single analytical
-Time variable. When datasets provide reporting intervals, the start
-date is used as the representative analytical time value. Original
-temporal columns are retained for transparency.
+When a dataset reports a time range instead of a single date (like "cases from March 1 to March 7"), this project uses the **start date** as the one date it works with.
 
-## Full Time Role Definition
+## Why the start date
 
-The platform operates on a single standardized Time role. If a dataset
-represents time as a reporting interval (e.g. `calendar_start_date` /
-`calendar_end_date`, as OpenDengue does), the preprocessing /
-standardization stage derives one representative analytical time
-variable before downstream analysis. Version 1 uses the start date of
-the reporting period as the representative time value, because it is
-deterministic, reproducible, easy to explain, and avoids introducing
-extra calculations. The original temporal columns are preserved in the
-cleaned dataset for transparency and traceability.
+It's simple, predictable, and doesn't need any extra math. The original date range is kept in the cleaned data too, so nothing is thrown away, it's just not what the analysis calculations use.
