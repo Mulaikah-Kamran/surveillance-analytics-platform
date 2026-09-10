@@ -2,7 +2,9 @@
 
 A tool that takes messy, real-world disease surveillance data and turns it into something you can actually use: clean numbers, clear charts, and honest forecasts.
 
-Built around dengue surveillance data from South Asia, but designed to work on other diseases and countries too. It's already been tested on a second, completely unrelated dataset (US disease surveillance from the CDC) to check that it actually holds up, not just on the data it was built for.
+Built for public health analysts who need to make sense of surveillance data day to day, though the code itself is written to make sense to anyone curious how it works too.
+
+It's built around dengue surveillance data from South Asia, but designed to work on other diseases and countries too. It's already been tested on a second, completely unrelated dataset (US disease surveillance from the CDC) to check that it actually holds up, not just on the data it was built for.
 
 ## What it does
 
