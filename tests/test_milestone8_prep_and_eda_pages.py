@@ -150,3 +150,64 @@ def test_exploratory_analysis_shows_population_unavailable_caption(
     assert at.exception == []
     captions = [c.value for c in at.caption]
     assert any("not available" in c for c in captions)
+
+
+def test_exploratory_analysis_surfaces_case_definition_heterogeneity(
+    mocked_population_registry,
+):
+    """A real, genuine finding (a case-definition change within one
+    calendar year) must be visible on this page, not just as a marker
+    on the Visualization page's chart.
+    """
+    header = (
+        "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,"
+        "S_res,case_definition_standardised\n"
+    )
+    rows = "".join(
+        f"Testland,2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0,"
+        f"{'Confirmed' if m <= 9 else 'Total'}\n"
+        for m in range(1, 13)
+    )
+    csv_bytes = (header + rows).encode()
+
+    at = _configured_session_app(csv_bytes)
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
+    at.run()
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
+    at.run()
+    assert at.exception == []
+    markdowns = " ".join(m.value for m in at.markdown)
+    captions = " ".join(c.value for c in at.caption)
+    assert "trust a trend line" in markdowns
+    assert "Testland, 2020" in captions
+    assert "case definition changed mid-year" in captions
+
+
+def test_exploratory_analysis_long_heterogeneity_list_shows_expander(
+    mocked_population_registry,
+):
+    """More than a few flagged country-years must collapse into an
+    expander rather than becoming a new wall of text -- the exact
+    problem this callout was added to avoid elsewhere on the page.
+    """
+    header = (
+        "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,"
+        "S_res,case_definition_standardised\n"
+    )
+    rows = ""
+    for country_index in range(5):
+        country = f"Country{country_index}"
+        for m in range(1, 13):
+            case_def = "Confirmed" if m <= 6 else "Total"
+            rows += (
+                f"{country},2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0,{case_def}\n"
+            )
+    csv_bytes = (header + rows).encode()
+
+    at = _configured_session_app(csv_bytes)
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
+    at.run()
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
+    at.run()
+    assert at.exception == []
+    assert len(at.expander) > 0
