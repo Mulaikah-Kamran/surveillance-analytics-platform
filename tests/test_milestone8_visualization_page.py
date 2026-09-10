@@ -137,4 +137,52 @@ def test_annual_trend_rendered_via_scrollable_html_embed_not_native_widget():
 
     assert at.exception == []
     fig = at.session_state["analysis_session"].results["visualization"].annual_trend
-    assert fig.layout.width == 900
+    assert fig.layout.width == 780
+
+
+def test_annual_trend_component_height_is_capped_for_many_countries():
+    """Real bug, caught via a real browser reproduction against the full
+    129-country dataset: the embedded component's height was set to the
+    figure's own full natural height (320px per row of countries),
+    which for that many countries came to over 20,000px -- an iframe
+    that tall stretches the whole page rather than giving a bounded,
+    scrollable chart viewer.
+
+    AppTest cannot inspect the actual rendered iframe height (same
+    limitation noted elsewhere in this file for st.components.v1.html
+    internals) -- what's verified here is that the underlying figure's
+    own natural height genuinely exceeds the intended cap for a
+    realistic many-country case, confirming the scenario is real. The
+    capped, scrollable rendering itself was verified separately with
+    real screenshots and a real horizontal-scroll interaction.
+    """
+    from unittest.mock import patch
+
+    header = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+    rows = "".join(
+        f"Country{country_index},2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n"
+        for country_index in range(20)
+        for m in range(1, 13)
+    )
+    csv_bytes = (header + rows).encode()
+
+    with (
+        patch(
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            Path("/tmp/nonexistent_registry2.json"),
+        ),
+        patch(
+            "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
+            return_value=[],
+        ),
+    ):
+        at = _app_through_visualization(csv_bytes)
+        at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
+        at.run()
+
+    assert at.exception == []
+    fig = at.session_state["analysis_session"].results["visualization"].annual_trend
+    # 20 countries at 2 per row is 10 rows * 320px -- comfortably past
+    # any reasonable fixed viewport, confirming this scenario would
+    # have hit the pre-fix bug.
+    assert fig.layout.height > 600

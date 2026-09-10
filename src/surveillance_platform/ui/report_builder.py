@@ -268,7 +268,7 @@ def _visualization_section(session: AnalysisSession) -> str:
             # exported report. A fixed, explicit width inside a
             # scrollable wrapper renders every panel at a legible
             # size and scrolls for the rest, instead of overflowing.
-            fig.update_layout(width=900)
+            fig.update_layout(width=780)
             chart_html = (
                 '<div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">'
                 + fig.to_html(include_plotlyjs=False, full_html=False)

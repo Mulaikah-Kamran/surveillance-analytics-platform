@@ -43,15 +43,25 @@ viz = session.results["visualization"]
 with st.container(border=True):
     st.subheader("Annual surveillance trend")
     annual_trend_fig = viz.annual_trend
-    annual_trend_fig.update_layout(width=900)
+    annual_trend_fig.update_layout(width=780)
+    # Bounded viewport, not a page-dominating component: this figure's
+    # height scales with the number of countries (320px per row), and
+    # for the full ~129-country dataset that's over 20,000px tall --
+    # confirmed directly, not assumed, by inspecting the real embedded
+    # iframe's own bounding box. The chart itself keeps its full
+    # natural size; the wrapping div is capped to a fixed viewport
+    # height with scroll in both directions, so the page never has to
+    # stretch to fit it.
+    viewport_height = min(int(annual_trend_fig.layout.height), 600)
     scrollable_chart_html = (
-        '<div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">'
+        f'<div style="overflow:auto; -webkit-overflow-scrolling:touch; '
+        f'height:{viewport_height}px;">'
         + annual_trend_fig.to_html(include_plotlyjs=True, full_html=False)
         + "</div>"
     )
     st.components.v1.html(
         scrollable_chart_html,
-        height=int(annual_trend_fig.layout.height) + 30,
+        height=viewport_height + 20,
         scrolling=False,
     )
 
