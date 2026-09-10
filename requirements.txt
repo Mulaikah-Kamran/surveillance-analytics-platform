@@ -2,6 +2,14 @@
 #
 # Every dependency is pinned to an exact version, added only once the
 # project genuinely needed it.
+#
+# The line below installs this repo's own package (src/surveillance_platform)
+# in editable mode. Locally this is normally done with a separate
+# `pip install -e .` step, but Streamlit Community Cloud only ever runs
+# `pip install -r requirements.txt` -- without this line, the deployed
+# app fails immediately with ModuleNotFoundError on the first internal
+# import, since the src-layout package was never actually installed.
+-e .
 
 pytest==9.1.1
 black==26.5.1
