@@ -95,7 +95,7 @@ heterogeneous_years = [
 ]
 if heterogeneous_years:
     with st.container(border=True):
-        st.markdown("**⚠️ Worth knowing before you trust a trend line**")
+        st.markdown("**Worth knowing before you trust a trend line**")
         st.caption(
             f"{len(heterogeneous_years)} country-year(s) had a reporting "
             "inconsistency, which can distort a trend if read at face value."
@@ -121,7 +121,7 @@ if heterogeneous_years:
 # --- Summary card ------------------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("📊 Summary")
+    st.subheader("Summary")
     dist = eda.distribution
     col1, col2, col3 = st.columns(3)
     col1.metric("Observations", f"{d.count:,}")
@@ -138,7 +138,7 @@ with st.container(border=True):
 # --- Data quality card ---------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("🔍 Data quality")
+    st.subheader("Data quality")
     m = eda.missingness
     incomplete_columns = {c: v for c, v in m.missing_counts.items() if v > 0}
     if incomplete_columns:
@@ -181,7 +181,7 @@ with st.container(border=True):
 # --- By country card ----------------------------------------------------
 
 with st.container(border=True):
-    st.subheader("🌍 By country")
+    st.subheader("By country")
     for entry in eda.country_comparison.countries:
         with st.expander(f"{entry.country} ({entry.observation_count:,} observations)"):
             cd = entry.descriptive

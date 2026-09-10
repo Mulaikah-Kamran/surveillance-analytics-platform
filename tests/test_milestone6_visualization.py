@@ -252,15 +252,15 @@ def test_heterogeneity_flags_are_visibly_distinguishable(eda_result):
     # Sri Lanka 2021 has heterogeneous T_res -> flagged (index 1).
     assert sri_lanka_trace.marker.symbol[0] == "circle"
     assert sri_lanka_trace.marker.symbol[1] == "diamond"
-    assert "⚠" in sri_lanka_trace.hovertext[1]
-    assert "⚠" not in sri_lanka_trace.hovertext[0]
+    assert "Note:" in sri_lanka_trace.hovertext[1]
+    assert "Note:" not in sri_lanka_trace.hovertext[0]
 
     bangladesh_trace = next(t for t in figure.data if t.name == "Bangladesh")
     # Bangladesh 2021 has heterogeneous case_definition_standardised
     # (index 0); 2022 is homogeneous (index 1).
     assert bangladesh_trace.marker.symbol[0] == "diamond"
     assert bangladesh_trace.marker.symbol[1] == "circle"
-    assert "⚠" in bangladesh_trace.hovertext[0]
+    assert "Note:" in bangladesh_trace.hovertext[0]
 
 
 def test_heterogeneity_flags_are_generic_not_hardcoded():
@@ -286,7 +286,7 @@ def test_heterogeneity_flags_are_generic_not_hardcoded():
     result = analyze(data, ROLE_CONFIG, population_data=None)
     figure = annual_surveillance_trend(result)
     nepal_trace = next(t for t in figure.data if t.name == "Nepal")
-    assert "⚠" in nepal_trace.hovertext[0]
+    assert "Note:" in nepal_trace.hovertext[0]
     assert "reporting resolution changed mid-year" in nepal_trace.hovertext[0]
 
 
@@ -309,7 +309,7 @@ def test_homogeneous_dataset_has_no_heterogeneity_markers():
     result = analyze(data, ROLE_CONFIG, population_data=None)
     figure = annual_surveillance_trend(result)
     for trace in figure.data:
-        assert all("⚠" not in text for text in trace.hovertext)
+        assert all("Note:" not in text for text in trace.hovertext)
 
 
 # ---------------------------------------------------------------------

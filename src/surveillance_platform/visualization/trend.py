@@ -92,7 +92,7 @@ def annual_surveillance_trend(eda_result: EDAResult) -> go.Figure:
         hover_text = [
             (
                 f"{country}, {year}<br>Reported-case total: {total:g}"
-                + (f"<br>⚠ {note}" if note else "")
+                + (f"<br>Note: {note}" if note else "")
             )
             for year, total, note in zip(years, totals, notes)
         ]
