@@ -77,8 +77,6 @@ if uploaded_file is not None:
 
     st.success(f"Loaded {len(data):,} rows, {len(data.columns)} columns.")
     st.dataframe(data.head())
-    st.caption("Column types:")
-    st.dataframe(data.dtypes.astype(str).rename("dtype"))
 
     session = workflow.set_dataset(session, data)
     st.session_state["analysis_session"] = session
