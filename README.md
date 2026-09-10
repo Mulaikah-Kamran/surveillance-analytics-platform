@@ -65,6 +65,12 @@ src/surveillance_platform/
 └── ui/                  # the Streamlit app itself
 ```
 
+## Worth knowing before you trust the numbers
+
+This tool works with *reported* cases, which always undercount real disease activity to some degree, not true infection counts. Forecasts are meant to show whether a transparent, honest forecasting approach is possible, not to guide real outbreak response on their own. And it's built and tested on South Asian dengue data plus one US dataset, not validated globally or across many diseases yet.
+
+None of that makes the results useless. It just means they should be read as what they actually are.
+
 ## More detail
 
 - [`docs/`](docs/) has the technical writeup for each part of the pipeline
