@@ -14,22 +14,53 @@ import streamlit as st
 
 PAGES_DIR = "src/surveillance_platform/ui/pages"
 
-st.set_page_config(page_title="Epicurve", layout="wide")
+st.set_page_config(page_title="Epicurve", page_icon="assets/icon.png", layout="wide")
 
 pg = st.navigation(
     [
-        st.Page(f"{PAGES_DIR}/load_dataset.py", title="Load Dataset"),
-        st.Page(f"{PAGES_DIR}/configure_roles.py", title="Configure Roles"),
-        st.Page(f"{PAGES_DIR}/data_preparation.py", title="Data Preparation"),
-        st.Page(f"{PAGES_DIR}/exploratory_analysis.py", title="Exploratory Analysis"),
-        st.Page(f"{PAGES_DIR}/visualization.py", title="Visualization"),
-        st.Page(f"{PAGES_DIR}/forecasting.py", title="Forecasting"),
-        st.Page(f"{PAGES_DIR}/results_export.py", title="Results & Export"),
+        st.Page(
+            f"{PAGES_DIR}/load_dataset.py",
+            title="Load Dataset",
+            icon=":material/upload_file:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/configure_roles.py",
+            title="Configure Roles",
+            icon=":material/tune:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/data_preparation.py",
+            title="Data Preparation",
+            icon=":material/cleaning_services:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/exploratory_analysis.py",
+            title="Exploratory Analysis",
+            icon=":material/search:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/visualization.py",
+            title="Visualization",
+            icon=":material/bar_chart:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/forecasting.py",
+            title="Forecasting",
+            icon=":material/trending_up:",
+        ),
+        st.Page(
+            f"{PAGES_DIR}/results_export.py",
+            title="Results & Export",
+            icon=":material/description:",
+        ),
     ]
 )
 
 with st.sidebar:
+    st.image("assets/icon.png", width=48)
     st.markdown("### Epicurve")
-    st.caption("Public Health Surveillance & Analytics Platform")
+    st.caption(
+        "Public health surveillance and analytics, built for public health analysts."
+    )
 
 pg.run()
