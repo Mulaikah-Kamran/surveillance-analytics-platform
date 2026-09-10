@@ -5,24 +5,23 @@ Runs M6's visualize(). Each chart in its own bounded container (the
 M6's plotly_white charts are left exactly as approved, not modified
 for dark mode.
 
-Mobile fix (2026-09-10): annual_trend uses an unbounded per-country
-subplot grid (trend.py's _MAX_COLUMNS=2, but the row count grows with
-however many countries are in the dataset). st.plotly_chart's own
-width parameter cannot help here -- confirmed directly against
-Streamlit's own documented behavior: a chart's width is always capped
-to its parent container's width, with no way to let it overflow, so
-on a phone every panel gets compressed to illegible size regardless of
-how the width is requested. Rendered instead via
-st.components.v1.html() with the chart's own to_html() output inside
-a scrollable div: desktop is unaffected (900px fits the ~960px content
-column with no scrolling needed, confirmed visually), while a
-narrower viewport shows each country panel at a legible size with
-horizontal scroll for the rest, rather than squeezing everything to
-fit. Every other chart on this page stays on the native
-st.plotly_chart widget -- surveillance_profile's grid is capped at 2
-panels (resolution + case definition), too small to have this problem.
+Annual trend redesign (2026-09-10): the previous fix (a fixed-width
+chart in a scrollable box) technically stopped the overflow bug, but
+cramming many small per-country subplots into one scrollable box was
+never a good way to look at this data, regardless of how well the
+scroll mechanics worked. Replaced with a country selector -- the same
+pattern already used successfully on the Forecasting page -- showing
+one country at a time as a proper, full-sized native st.plotly_chart.
+Each single-country figure is built by extracting that country's own
+trace (name, x/y data, marker styling, hover text) directly from
+M6's already-computed annual_trend figure, not by calling M6 again or
+modifying its output -- a UI-layer presentation choice, not a change
+to the frozen analytical figure. An expander still offers the full
+small-multiples overview for anyone who wants to compare every
+country at a glance.
 """
 
+import plotly.graph_objects as go
 import streamlit as st
 
 from surveillance_platform import workflow
@@ -42,28 +41,50 @@ viz = session.results["visualization"]
 
 with st.container(border=True):
     st.subheader("Annual surveillance trend")
-    annual_trend_fig = viz.annual_trend
-    annual_trend_fig.update_layout(width=780)
-    # Bounded viewport, not a page-dominating component: this figure's
-    # height scales with the number of countries (320px per row), and
-    # for the full ~129-country dataset that's over 20,000px tall --
-    # confirmed directly, not assumed, by inspecting the real embedded
-    # iframe's own bounding box. The chart itself keeps its full
-    # natural size; the wrapping div is capped to a fixed viewport
-    # height with scroll in both directions, so the page never has to
-    # stretch to fit it.
-    viewport_height = min(int(annual_trend_fig.layout.height), 600)
-    scrollable_chart_html = (
-        f'<div style="overflow:auto; -webkit-overflow-scrolling:touch; '
-        f'height:{viewport_height}px;">'
-        + annual_trend_fig.to_html(include_plotlyjs=True, full_html=False)
-        + "</div>"
+    trend_fig = viz.annual_trend
+    country_names = [trace.name for trace in trend_fig.data]
+    selected_country = st.selectbox("Country", country_names, key="viz_trend_country")
+    selected_trace = next(t for t in trend_fig.data if t.name == selected_country)
+
+    single_fig = go.Figure(
+        data=[
+            go.Scatter(
+                x=selected_trace.x,
+                y=selected_trace.y,
+                mode="lines+markers",
+                line=selected_trace.line,
+                marker=selected_trace.marker,
+                hovertext=selected_trace.hovertext,
+                hoverinfo="text",
+                showlegend=False,
+            )
+        ]
     )
-    st.components.v1.html(
-        scrollable_chart_html,
-        height=viewport_height + 20,
-        scrolling=False,
+    single_fig.update_layout(
+        template="plotly_white",
+        title=f"{selected_country} -- Annual Reported-Case Total",
+        xaxis_title="Year",
+        yaxis_title="Reported-case total",
+        height=420,
     )
+    single_fig.update_xaxes(tickformat="d", nticks=8, tickangle=-45)
+    st.plotly_chart(single_fig, use_container_width=True)
+    st.caption("⬦ = inconsistent reporting that year (hover for details).")
+
+    with st.expander("See all countries at once"):
+        trend_fig.update_layout(width=780)
+        viewport_height = min(int(trend_fig.layout.height), 600)
+        scrollable_chart_html = (
+            f'<div style="overflow:auto; -webkit-overflow-scrolling:touch; '
+            f'height:{viewport_height}px;">'
+            + trend_fig.to_html(include_plotlyjs=True, full_html=False)
+            + "</div>"
+        )
+        st.components.v1.html(
+            scrollable_chart_html,
+            height=viewport_height + 20,
+            scrolling=False,
+        )
 
 with st.container(border=True):
     st.subheader("Annual distribution by country")

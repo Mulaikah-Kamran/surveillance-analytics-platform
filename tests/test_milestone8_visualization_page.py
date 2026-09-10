@@ -93,23 +93,13 @@ def test_visualization_shows_unavailable_captions_when_optional_figures_absent(
     assert any("not available" in c for c in captions)
 
 
-def test_annual_trend_rendered_via_scrollable_html_embed_not_native_widget():
-    """The mobile-legibility fix: annual_trend's own multi-country
-    subplot grid is unbounded (one column pair per two countries), so
-    it must go through st.components.v1.html() with an explicit,
-    generous width -- not st.plotly_chart(), which Streamlit's own
-    documentation confirms can never exceed its parent container's
-    width no matter what width value is requested.
-
-    AppTest has no first-class way to inspect an st.components.v1.html
-    element's actual rendered HTML/iframe content -- the genuine
-    scroll behavior this produces was verified separately with real
-    Playwright screenshots at both a 1440px desktop and a 390px phone
-    viewport. What's verified here, at the level AppTest can actually
-    check, is that the underlying figure object was mutated with the
-    wider explicit width the fix depends on, and that this multi-
-    country case (unlike the single-country fixture used elsewhere in
-    this file) still renders without exception.
+def test_annual_trend_shows_a_country_selector_with_a_single_native_chart():
+    """Redesign (2026-09-10): cramming many small per-country subplots
+    into one scrollable box was replaced with a country selector
+    showing one country at a time as a full-sized native
+    st.plotly_chart -- the same pattern already used successfully on
+    the Forecasting page. Confirms the selector offers both countries
+    and defaults to rendering the first one without exception.
     """
     from unittest.mock import patch
 
@@ -136,25 +126,73 @@ def test_annual_trend_rendered_via_scrollable_html_embed_not_native_widget():
         at.run()
 
     assert at.exception == []
+    country_selector = at.selectbox(key="viz_trend_country")
+    assert set(country_selector.options) == {"Otherland", "Testland"}
+    # AppTest has no attribute for inspecting st.plotly_chart elements
+    # directly -- the actual single-country chart rendering (correct
+    # axis formatting, preserved diamond marker, legible at a normal
+    # viewport) was verified separately with real screenshots.
+
+
+def test_annual_trend_expander_still_offers_the_full_overview():
+    """The full small-multiples grid is still available for anyone who
+    wants to compare every country at once, now tucked into an
+    expander rather than being the default view. AppTest cannot
+    inspect an st.components.v1.html element's actual rendered
+    HTML/iframe content -- the genuine bounded, scrollable rendering
+    inside the expander was verified separately with real screenshots
+    and a real horizontal-scroll interaction, against both a
+    two-country case and the full 129-country dataset (confirmed
+    directly: 320px per row of countries comes to over 20,000px
+    without the height cap). What's verified here, at the level
+    AppTest can actually check, is that the expander exists and the
+    underlying figure was mutated with the width the fix depends on.
+    """
+    from unittest.mock import patch
+
+    header = "adm_0_name,calendar_start_date,calendar_end_date,dengue_total,S_res\n"
+    rows = "".join(
+        f"{country},2020-{m:02d}-01,2020-{m:02d}-28,{m * 3},Admin0\n"
+        for country in ("Testland", "Otherland")
+        for m in range(1, 13)
+    )
+    csv_bytes = (header + rows).encode()
+
+    with (
+        patch(
+            "surveillance_platform.data_loading.population_lookup._CACHE_PATH",
+            Path("/tmp/nonexistent_registry.json"),
+        ),
+        patch(
+            "surveillance_platform.data_loading.population_lookup._fetch_country_registry",
+            return_value=[],
+        ),
+    ):
+        at = _app_through_visualization(csv_bytes)
+        at.switch_page("src/surveillance_platform/ui/pages/visualization.py")
+        at.run()
+
+    assert at.exception == []
+    assert len(at.expander) > 0
     fig = at.session_state["analysis_session"].results["visualization"].annual_trend
     assert fig.layout.width == 780
 
 
-def test_annual_trend_component_height_is_capped_for_many_countries():
+def test_annual_trend_natural_height_exceeds_cap_for_many_countries():
     """Real bug, caught via a real browser reproduction against the full
-    129-country dataset: the embedded component's height was set to the
-    figure's own full natural height (320px per row of countries),
-    which for that many countries came to over 20,000px -- an iframe
-    that tall stretches the whole page rather than giving a bounded,
-    scrollable chart viewer.
+    129-country dataset: the overview expander's embedded component
+    height was set to the figure's own full natural height (320px per
+    row of countries), which for that many countries came to over
+    20,000px -- an iframe that tall stretches the whole page rather
+    than giving a bounded, scrollable chart viewer.
 
     AppTest cannot inspect the actual rendered iframe height (same
-    limitation noted elsewhere in this file for st.components.v1.html
-    internals) -- what's verified here is that the underlying figure's
-    own natural height genuinely exceeds the intended cap for a
-    realistic many-country case, confirming the scenario is real. The
-    capped, scrollable rendering itself was verified separately with
-    real screenshots and a real horizontal-scroll interaction.
+    limitation noted above) -- what's verified here is that the
+    underlying figure's own natural height genuinely exceeds the
+    intended cap for a realistic many-country case, confirming the
+    scenario is real. The capped, scrollable rendering itself was
+    verified separately with real screenshots and a real
+    horizontal-scroll interaction.
     """
     from unittest.mock import patch
 
