@@ -67,16 +67,31 @@ def configure_roles(
 def run_preparation(session: AnalysisSession) -> AnalysisSession:
     """Run Milestone 4's ``prepare()``.
 
-    Requires status "Configured". Catches ``DataPreparationError``
-    (confirmed: the only hard-stop exception in the current pipeline,
-    raised solely by Validation) and sets status "Failed" with its
-    violation messages -- implementing PFD Section 14's exact failure
-    behavior: halt downstream execution, preserve diagnostics, return
-    control to the presentation layer.
+    Requires a dataset and a valid role configuration to already be
+    set -- checked the same content-based way every other controller
+    function checks its own precondition (e.g. run_eda() checks
+    ``"preparation" not in session.results``), not a strict status
+    match. A strict ``status != "Configured"`` check broke revisiting
+    this page after any later stage had run: that stage's own
+    dataclasses.replace() call changes the session's status field
+    (e.g. to "Completed" after forecasting), so a later, unrelated
+    visit to Data Preparation would fail this precondition even
+    though the dataset and role configuration it actually needs are
+    completely unchanged. Caught via a real browser reproduction, not
+    a hypothetical: load data, configure roles, forecast, then go
+    back to Data Preparation.
+
+    Catches ``DataPreparationError`` (confirmed: the only hard-stop
+    exception in the current pipeline, raised solely by Validation)
+    and sets status "Failed" with its violation messages --
+    implementing PFD Section 14's exact failure behavior: halt
+    downstream execution, preserve diagnostics, return control to the
+    presentation layer.
     """
-    if session.status != "Configured":
+    if session.dataset is None or session.role_config is None:
         raise ValueError(
-            f"run_preparation() requires status 'Configured', got {session.status!r}."
+            "run_preparation() requires a dataset and a valid role configuration "
+            "to already be set."
         )
     try:
         result = prepare(session.dataset, session.role_config)

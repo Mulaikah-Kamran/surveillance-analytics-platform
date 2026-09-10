@@ -8,6 +8,8 @@ this suite stays fast.
 
 from __future__ import annotations
 
+import dataclasses
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -100,10 +102,35 @@ def test_configure_roles_fails_with_invalid_config():
     assert len(updated.error_messages) > 0
 
 
-def test_run_preparation_requires_configured_status():
-    session = set_dataset(create_session(), _valid_dataset())  # still "Created"
-    with pytest.raises(ValueError, match="requires status 'Configured'"):
+def test_run_preparation_requires_dataset_and_role_config():
+    session = set_dataset(create_session(), _valid_dataset())  # no role_config yet
+    with pytest.raises(ValueError, match="requires a dataset and a valid role"):
         run_preparation(session)
+
+
+def test_run_preparation_works_again_after_a_later_stage_changed_status():
+    """Real bug, caught via a real browser reproduction: load data,
+    configure roles, run preparation, forecast (which changes the
+    session's status to 'Completed'), then revisit Data Preparation.
+    run_preparation() must not depend on the session's status field --
+    every other controller function checks session.results content
+    instead, precisely so a later stage's own status change never
+    breaks revisiting an earlier page.
+    """
+    session = configure_roles(
+        set_dataset(create_session(), _valid_dataset()), ROLE_CONFIG
+    )
+    session = run_preparation(session)
+    assert session.status == "Running"
+
+    # Simulate a later stage changing the session's status, the same
+    # way run_forecast_for_track() or run_forecasting() would.
+    session = dataclasses.replace(session, status="Completed")
+
+    # Revisiting Data Preparation must still work.
+    session = run_preparation(session)
+    assert session.status == "Running"
+    assert "preparation" in session.results
 
 
 def test_run_preparation_succeeds_and_advances_to_running():
