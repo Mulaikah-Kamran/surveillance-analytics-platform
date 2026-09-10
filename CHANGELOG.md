@@ -252,6 +252,46 @@ direct, dependency-free MMWR calculation, verified against a real
 reference date before being trusted, consistent with the project's
 "does the standard library already solve this?" dependency principle.
 
+### Fixed — Post-M9 UI refinements
+
+- **Forecast-date context** (Page 6): different tracks show forecasts
+  for very different years with no visible explanation, since each
+  forecast starts the month immediately after that track's own last
+  real data point, not after today's date. Addressed at three
+  touchpoints (track selector label, an immediate info caption on
+  selection, and the results subheader) rather than a single fix,
+  following an Antigravity-reviewed design recommendation — verified
+  against the codebase's real field names first, since the review's
+  own draft cited a nonexistent file and attribute.
+- **HTML report navigation and mobile responsiveness**
+  (`report_builder.py`): the report was one long scroll with no way
+  to jump to a section and had zero responsive breakpoints. Added a
+  sticky section nav with scroll-spy highlighting (generated only for
+  sections actually present in a given session) and real
+  `@media (max-width: 640px)` rules — metric rows stack vertically,
+  tables scroll horizontally instead of overflowing, Plotly charts
+  are genuinely responsive. Verified with real screenshots at both a
+  1280px and a 390px viewport.
+- **Mobile-illegible annual trend chart** (Page 5): the chart's
+  unbounded per-country subplot grid became illegible when squeezed
+  to a phone's width via `st.plotly_chart`'s native container-width
+  behavior. Confirmed directly against Streamlit's own documentation
+  that this widget can never be made to exceed its parent container's
+  width, by design, before switching to an `st.components.v1.html()`
+  embed with an explicit wider figure width inside a scrollable
+  container — verified with real screenshots that desktop is
+  unaffected while mobile now shows each panel legibly with genuine
+  scroll to see the rest. Scoped to only this one chart; the other
+  multi-panel chart on the page (`surveillance_profile`) is capped at
+  2 panels and never has this problem.
+- Investigated and deliberately left unfixed: Streamlit's own default
+  sidebar-overlay behavior on mobile (stays open after navigating,
+  requiring one extra tap to dismiss) — a genuine but minor platform
+  default, not introduced by this project's own code, where the only
+  available fix (custom JS forcing it closed) would contradict
+  ADR-010's own locked "zero custom CSS/JS injection" principle for a
+  one-tap inconvenience rather than a broken state.
+
 ## [0.1.0] — Milestone 1: Project Foundation
 
 ### Added
