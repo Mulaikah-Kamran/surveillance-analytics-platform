@@ -15,6 +15,17 @@ st.title("Load Dataset")
 
 session = st.session_state.setdefault("analysis_session", workflow.create_session())
 
+if session.dataset is None:
+    with st.container(border=True):
+        st.markdown(
+            "**Turn raw surveillance data into clean numbers, clear charts, "
+            "and honest forecasts.**"
+        )
+        st.caption(
+            "Load → Configure → Clean → Explore → Visualize → Forecast → Export. "
+            "Seven steps, one dataset, start to finish."
+        )
+
 st.markdown(
     "Upload a surveillance dataset (CSV). If you don't have one handy, "
     "download the real, checksum-verified sample dataset below, then "
