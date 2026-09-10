@@ -15,7 +15,7 @@ import streamlit as st
 PAGES_DIR = "src/surveillance_platform/ui/pages"
 
 st.set_page_config(page_title="Epicurve", page_icon="assets/icon.png", layout="wide")
-st.logo("assets/icon.png", size="large")
+st.logo("assets/logo_lockup.png", icon_image="assets/icon.png", size="large")
 
 pg = st.navigation(
     [
@@ -58,8 +58,6 @@ pg = st.navigation(
 )
 
 with st.sidebar:
-    st.image("assets/icon.png", width=48)
-    st.markdown("### Epicurve")
     st.caption(
         "Public health surveillance and analytics, built for public health analysts."
     )
