@@ -287,7 +287,7 @@ def test_heterogeneity_flags_are_generic_not_hardcoded():
     figure = annual_surveillance_trend(result)
     nepal_trace = next(t for t in figure.data if t.name == "Nepal")
     assert "⚠" in nepal_trace.hovertext[0]
-    assert "T_res" in nepal_trace.hovertext[0]
+    assert "reporting resolution changed mid-year" in nepal_trace.hovertext[0]
 
 
 def test_homogeneous_dataset_has_no_heterogeneity_markers():

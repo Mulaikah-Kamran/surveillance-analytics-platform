@@ -256,12 +256,33 @@ def _visualization_section(session: AnalysisSession) -> str:
     if viz.surveillance_profile is not None:
         figures.append(("Surveillance resolution profile", viz.surveillance_profile))
 
-    charts_html = "".join(
-        f'<h3 style="font-size:1rem;margin-top:1.5rem;">{_esc(title)}</h3>'
-        f"{fig.to_html(include_plotlyjs=False, full_html=False, config={'responsive': True})}"
-        for title, fig in figures
-    )
-    return f'<section id="visualization"><h2>Visualization</h2>{charts_html}</section>'
+    chart_blocks = []
+    for title, fig in figures:
+        if title == "Annual surveillance trend":
+            # Same fix as the live app's Visualization page: this
+            # figure's per-country subplot grid is unbounded (more
+            # countries means more panels), and responsive:true alone
+            # does not stop a wide multi-panel grid from overflowing
+            # its container -- confirmed directly, this is what caused
+            # the reported "chart going out of the box" in the
+            # exported report. A fixed, explicit width inside a
+            # scrollable wrapper renders every panel at a legible
+            # size and scrolls for the rest, instead of overflowing.
+            fig.update_layout(width=900)
+            chart_html = (
+                '<div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">'
+                + fig.to_html(include_plotlyjs=False, full_html=False)
+                + "</div>"
+            )
+        else:
+            chart_html = fig.to_html(
+                include_plotlyjs=False, full_html=False, config={"responsive": True}
+            )
+        chart_blocks.append(
+            f'<h3 style="font-size:1rem;margin-top:1.5rem;">{_esc(title)}</h3>{chart_html}'
+        )
+
+    return f'<section id="visualization"><h2>Visualization</h2>{"".join(chart_blocks)}</section>'
 
 
 def _forecast_chart(result) -> go.Figure:
@@ -394,8 +415,8 @@ def build_report_html(session: AnalysisSession) -> str:
 </main>
 <footer>
   Forecasts are illustrative and evaluative, not operational
-  predictions (see docs/adr/ADR-009-forecasting-strategy.md). Reported
-  case counts reflect surveillance data, not true disease burden.
+  predictions. Reported case counts reflect surveillance data, not
+  true disease burden.
 </footer>
 {_SCROLL_SPY_SCRIPT}
 </body>

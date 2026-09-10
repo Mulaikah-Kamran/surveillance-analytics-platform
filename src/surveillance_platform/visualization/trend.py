@@ -30,19 +30,16 @@ _MAX_COLUMNS = 2
 
 
 def _heterogeneity_note(entry: CountryYearSummary) -> str | None:
-    """Describe which M5 homogeneity flag(s) are set to ``False``, if any.
+    """Describe, in plain language, which reporting inconsistency applies, if any.
 
     Returns ``None`` when both flags are ``True`` or ``None`` (i.e. the
     underlying column was absent, which is not a heterogeneity finding).
     """
     flagged: list[str] = []
     if entry.resolution_homogeneous is False:
-        flagged.append("T_res is not homogeneous within this country-year")
+        flagged.append("reporting resolution changed mid-year")
     if entry.case_definition_homogeneous is False:
-        flagged.append(
-            "case_definition_standardised is not homogeneous within this "
-            "country-year"
-        )
+        flagged.append("case definition changed mid-year")
     return "; ".join(flagged) if flagged else None
 
 
@@ -137,7 +134,7 @@ def annual_surveillance_trend(eda_result: EDAResult) -> go.Figure:
     figure.update_layout(
         title=(
             "Annual Surveillance Trend by Country "
-            "(reported-case totals; ⬦ = M5 heterogeneity flag)"
+            "(reported-case totals; ⬦ = inconsistent reporting that year)"
         ),
         template="plotly_white",
         showlegend=False,
