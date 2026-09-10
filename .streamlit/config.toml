@@ -1,23 +1,28 @@
-[theme]
-# ADR-010: deep teal primary, amber accent used only for warnings/
-# status (never decoration), off-white background -- deliberately
-# avoiding the AI-generated-design tells (cream+terracotta,
-# near-black+neon, SaaS-purple gradients).
+# Deep teal and warm amber, deliberately avoiding the AI-generated-
+# design tells (cream+terracotta, near-black+neon, SaaS-purple
+# gradients). Both light and dark are defined so the toggle in the
+# settings menu actually has something to switch between -- a single
+# [theme] block leaves nothing to toggle, which is why this was
+# missing before it was properly checked.
+
+[theme.light]
 primaryColor = "#1B4B4F"
 backgroundColor = "#FAFAF8"
 secondaryBackgroundColor = "#F0EFEA"
 textColor = "#1A1A1A"
-
-# IBM Plex Sans throughout, loaded via Streamlit's native Google
-# Fonts support -- zero custom CSS injection (ADR-010: hand-rolled
-# CSS overrides are a common source of the "hacky" look this project
-# is explicitly trying to avoid).
 font = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
 headingFont = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
 
-[theme.sidebar]
+[theme.light.sidebar]
 backgroundColor = "#F0EFEA"
 
-# Dark mode is Streamlit's own native Light/Dark/System-setting
-# toggle (ADR-010) -- present in the Settings menu automatically,
-# no separate [theme] block needed for it here.
+[theme.dark]
+primaryColor = "#4FA8A2"
+backgroundColor = "#14181C"
+secondaryBackgroundColor = "#1E252B"
+textColor = "#E8E6E1"
+font = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+headingFont = "'IBM Plex Sans':https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+
+[theme.dark.sidebar]
+backgroundColor = "#1A2024"
