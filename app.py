@@ -59,7 +59,7 @@ pg = st.navigation(
 
 with st.sidebar:
     st.caption(
-        "Public health surveillance and analytics, built for public health analysts."
+        "Public Health Surveillance & Analytics Platform, built for public health analysts."
     )
 
 pg.run()
