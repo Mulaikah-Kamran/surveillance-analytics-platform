@@ -32,6 +32,28 @@ _lockup_path = (
 )
 st.logo(_lockup_path, icon_image="assets/icon.png", size="large")
 
+# The sidebar nav link font size can't be set through Streamlit's own
+# theme config -- confirmed directly: theme.sidebar's font options
+# don't affect st.navigation's own links at all, and the only config
+# knob that does (theme.baseFontSize) affects the entire app, which
+# was tested and rejected: it made the Visualization page's dense,
+# many-country chart labels overlap and become unreadable. This is a
+# narrow, single-purpose override targeting only Streamlit's own
+# documented data-testid attribute (not an auto-generated emotion-cache
+# class, which would be far more likely to break on a Streamlit
+# update), scoped to exactly the one element with the actual
+# readability problem.
+st.markdown(
+    """
+    <style>
+    [data-testid="stSidebarNavLink"] span[label] {
+        font-size: 1.15rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 pg = st.navigation(
     [
         st.Page(
