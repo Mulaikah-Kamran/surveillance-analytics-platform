@@ -15,6 +15,7 @@ import streamlit as st
 PAGES_DIR = "src/surveillance_platform/ui/pages"
 
 st.set_page_config(page_title="Epicurve", page_icon="assets/icon.png", layout="wide")
+st.logo("assets/icon.png", size="large")
 
 pg = st.navigation(
     [
