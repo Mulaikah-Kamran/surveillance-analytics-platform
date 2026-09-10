@@ -1,56 +1,34 @@
-# Public Health Surveillance & Analytics Platform — dependencies
+# Public Health Surveillance & Analytics Platform -- dependencies
 #
-# Per the Freeze Document (Section 26, Dependency Management,
-# Principle 4 — "Start minimal, grow with justification"): a dependency
-# is introduced only in the milestone where it first becomes necessary.
-# Milestone 1 (Project Foundation) requires no runtime analytical
-# dependencies yet — only the tools needed for repository setup and
-# testing. Runtime packages (pandas, numpy, plotly, scikit-learn,
-# streamlit) will be added in the milestones that first require them
-# (see Section 29, Implementation Roadmap), each with its own
-# justification recorded in the corresponding commit.
-#
-# Exact version pinning is used throughout, per Section 26, Principle 3.
+# Every dependency is pinned to an exact version, added only once the
+# project genuinely needed it.
 
 pytest==9.1.1
 black==26.5.1
 ruff==0.16.1
 
-# Milestone 4 (Data Preparation Pipeline) — first milestone requiring
-# tabular data structures, per Section 26 Principle 4 and Section 29.
+# Tabular data structures, used throughout the pipeline.
 pandas==3.0.5
 
-# numpy is pandas' core dependency and is also imported directly in
-# M7 (surveillance_platform.forecasting.model). Previously unpinned
-# (installed transitively) — pinned now because Antigravity's
-# post-merge M8 review reproduced Bangladesh's Confirmed-track MASE
-# as 1.4316, not the documented 1.4257: still the same qualitative
-# finding (SARIMA loses to the baseline), but not byte-identical,
-# which this project treats as worth closing, not waving away.
+# pandas' own core dependency, and also used directly for forecasting
+# math. Pinned exactly (not left to install transitively) after a
+# real reproducibility gap was found: an unpinned numpy/scipy combo
+# produced a materially different MASE score on a real backtest than
+# the one already documented, even though the underlying finding
+# (SARIMA loses to the baseline for that track) stayed the same.
 numpy==2.4.4
 
-# Milestone 6 (Visualization) — first milestone requiring interactive
-# analytical visualization, per Section 26 (Dependency Table, Section
-# 29 Implementation Roadmap: Plotly is the locked visualization library).
+# Interactive analytical visualization.
 plotly==6.9.0
 
-# Milestone 7 (Forecasting) — SARIMA is the locked primary forecasting
-# workflow (ADR-009). Not in the original Section 26 dependency table
-# (which named scikit-learn only for the baseline); statsmodels is
-# introduced here per Principle 4, with SARIMA's specific justification
-# recorded in ADR-009. Verified compatible with pandas==3.0.5/Python 3.12.
+# SARIMA is the project's locked primary forecasting approach (see
+# docs/adr/ADR-009-forecasting-strategy.md).
 statsmodels==0.15.0
 
-# scipy is statsmodels' numerical optimizer backbone (SARIMAX.fit()
-# calls into scipy.optimize) -- the most likely source of the MASE
-# discrepancy above, since it directly affects the MLE optimization
-# path. Previously unpinned for the same reason as numpy above.
+# statsmodels' numerical optimizer backbone -- the actual source of
+# the reproducibility gap noted above, since it directly affects the
+# model-fitting math.
 scipy==1.17.1
 
-# Milestone 8 (UI Integration) — Streamlit is the locked presentation
-# layer (ADR-006, Section 26 dependency table). Introduced now, at the
-# milestone that first requires it, per Principle 4. Verified
-# compatible with pandas==3.0.5/Python 3.12; verified st.cache_data
-# correctly hashes/caches this project's actual RoleConfiguration and
-# ForecastResult objects (ADR-010).
+# The presentation layer (see docs/adr/ADR-006-user-interface-strategy.md).
 streamlit==1.63.0
