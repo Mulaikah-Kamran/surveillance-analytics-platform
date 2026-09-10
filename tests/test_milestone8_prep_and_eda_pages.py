@@ -124,6 +124,50 @@ def test_exploratory_analysis_without_preparation_shows_warning():
     assert len(at.warning) > 0
 
 
+def test_exploratory_analysis_shows_friendly_message_when_zero_rows_survive_cleaning(
+    mocked_population_registry,
+):
+    """Real bug, caught via a real browser reproduction: every row in
+    this dataset has an unparseable Time value, so Data Preparation
+    correctly excludes all of them (a legitimate, valid outcome, not
+    itself a bug) -- but Exploratory Analysis then crashed trying to
+    compute statistics over zero rows: ValueError: cannot convert
+    float NaN to integer, from a formatting helper that assumed a
+    real number, inside a page that had implied it was safe to
+    proceed after 'Data preparation complete'.
+    """
+    header = "adm_0_name,notes,dengue_total\n"
+    rows = "".join(
+        f"{country},not a date,{i * 3}\n"
+        for i, country in enumerate(("Testland", "Otherland"))
+    )
+    csv_bytes = (header + rows).encode()
+
+    at = AppTest.from_file(APP_PATH)
+    at.run()
+    at.switch_page("src/surveillance_platform/ui/pages/load_dataset.py")
+    at.run()
+    at.get("file_uploader")[0].upload("test.csv", csv_bytes, "text/csv")
+    at.run()
+    at.switch_page("src/surveillance_platform/ui/pages/configure_roles.py")
+    at.run()
+    at.selectbox(key="role_time").select("notes")
+    at.selectbox(key="role_location").select("adm_0_name")
+    at.selectbox(key="role_measure").select("dengue_total")
+    at.run()
+
+    at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")
+    at.run()
+    assert (
+        at.session_state["analysis_session"].results["preparation"].report.rows_out == 0
+    )
+
+    at.switch_page("src/surveillance_platform/ui/pages/exploratory_analysis.py")
+    at.run()
+    assert at.exception == []
+    assert any("nothing to analyze" in w.value for w in at.warning)
+
+
 def test_exploratory_analysis_succeeds_after_preparation(mocked_population_registry):
     at = _configured_session_app(VALID_CSV)
     at.switch_page("src/surveillance_platform/ui/pages/data_preparation.py")

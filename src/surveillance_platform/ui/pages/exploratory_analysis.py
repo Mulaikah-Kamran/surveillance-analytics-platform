@@ -20,6 +20,7 @@ entirely (it previously only showed up as a marker on the
 Visualization page's chart).
 """
 
+import pandas as pd
 import streamlit as st
 
 from surveillance_platform import workflow
@@ -37,6 +38,14 @@ if "preparation" not in session.results or session.status == "Failed":
     st.stop()
 
 prepared_data = session.results["preparation"].data
+
+if len(prepared_data) == 0:
+    st.warning(
+        "No rows remain after cleaning, so there's nothing to analyze. Check "
+        "**Data Preparation** to see why every row was excluded."
+    )
+    st.stop()
+
 distinct_locations = sorted(
     prepared_data[session.role_config.location].unique().tolist()
 )
@@ -48,7 +57,17 @@ eda = session.results["eda"]
 
 
 def _fmt(value: float) -> str:
-    """Compact formatting so a wide number never truncates in a metric box."""
+    """Compact formatting so a wide number never truncates in a metric box.
+
+    NaN-safe (e.g. std dev is undefined for a single observation):
+    real bug, caught via a real browser reproduction with a dataset
+    that had zero rows left after cleaning, where int(value) raised
+    ValueError: cannot convert float NaN to integer. The zero-rows
+    case now gets caught earlier, above, but this stays defensive in
+    case any other path ever feeds this function a NaN.
+    """
+    if pd.isna(value):
+        return "n/a"
     if abs(value) >= 1_000_000:
         return f"{value / 1_000_000:.1f}M"
     if abs(value) >= 10_000:
@@ -131,8 +150,8 @@ with st.container(border=True):
     col3.metric("Min", _fmt(d.minimum))
     col3.metric("Max", _fmt(d.maximum))
     st.caption(
-        f"25th percentile {dist.q25:,.1f} · 75th percentile {dist.q75:,.1f} · "
-        f"std dev {d.std:,.1f}"
+        f"25th percentile {_fmt(dist.q25)} · 75th percentile {_fmt(dist.q75)} · "
+        f"std dev {_fmt(d.std)}"
     )
 
 # --- Data quality card ---------------------------------------------------
